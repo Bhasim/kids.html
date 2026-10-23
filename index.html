@@ -1,510 +1,979 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>العب وتحرّك</title>
+
 <style>
-:root{--bg:#fff3d1;--fg:#2b2350;--card:#fff;--bar:#e6defc;--a:#ff7a59;--b:#2f9fe8;--c:#3dbb5c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d1a3a;--fg:#fff4d6;--card:#2c2860;--bar:#3a3480}}
-:root[data-theme="dark"]{--bg:#1d1a3a;--fg:#fff4d6;--card:#2c2860;--bar:#3a3480}
-html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;overflow:hidden;text-align:center}
-[hidden]{display:none!important}
-#home{padding:14px;max-width:560px;margin:0 auto}
-h1{font-size:30px;margin:8px 0}
-.row{display:flex;gap:10px;justify-content:center;margin:10px 0}
-button{font:inherit;border:0;border-radius:22px;padding:14px 18px;font-size:20px;background:var(--card);color:var(--fg);box-shadow:0 3px 0 #0002}
-.age button{flex:1}
-.age button.on{background:var(--b);color:#fff}
-.g{display:block;width:100%;margin:10px 0;font-size:24px;padding:18px;color:#fff}
-.g small{display:block;font-size:14px;opacity:.9;margin-top:4px}
-#err{color:#d93025;min-height:20px;font-size:15px}
-#game{height:100%;height:100dvh;display:flex;flex-direction:column;align-items:center;overflow:hidden}
-#top{display:flex;width:100%;justify-content:space-between;align-items:center;padding:8px 12px;box-sizing:border-box;flex-shrink:0}
-#top button{padding:8px 14px;font-size:18px}
-#st{font-size:26px;font-weight:700}
-#pr{font-size:clamp(22px,5vw,40px);font-weight:700;min-height:1.3em;padding:0 10px;flex-shrink:0}
-#an{font-size:min(43vh,68vw);line-height:1.1;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;transition:transform .08s}
-#an.cbox{flex:none;width:min(58vh,78vw);height:min(58vh,78vw);max-width:520px;max-height:520px;margin:8px 0;border-radius:40px;justify-content:center;font-size:min(23vh,35vw);box-shadow:0 8px 0 #0003;border:8px solid var(--card);box-sizing:border-box}
-#bx{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0;width:100%}
-#bx svg{height:min(49vh,68vw);width:auto;max-width:90vw;overflow:visible}
-#ar{font-size:9vh;line-height:1}
-.bar{width:80%;max-width:520px;height:22px;background:var(--bar);border-radius:12px;overflow:hidden;margin:6px 0;flex-shrink:0}
-.bar i{display:block;height:100%;width:0;background:var(--c);transition:width .1s}
-#pg i{background:var(--a)}
-.lb{font-size:14px;opacity:.8;flex-shrink:0}
-#v{position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:clamp(190px,30vw,420px);height:clamp(145px,30vw,315px);object-fit:cover;object-position:center;border-radius:22px;border:5px solid var(--card);transform:scaleX(-1);background:#000;box-shadow:0 8px 28px #0005;z-index:5}
-@media(max-width:600px){
-#v{width:clamp(165px,42vw,260px);height:clamp(125px,32vw,200px);left:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px))}
-#bx svg{height:min(43vh,64vw)}
-#top button{padding:7px 10px;font-size:16px}
-#st{font-size:21px}
+:root {
+  --bg: #fff3d1;
+  --fg: #2b2350;
+  --card: #fff;
+  --bar: #e6defc;
+  --a: #ff7a59;
+  --b: #2f9fe8;
+  --c: #3dbb5c;
+  box-sizing: border-box;
 }
-#cheer{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-size:12vw;font-weight:800;color:#ffb300;text-shadow:0 4px 0 #0003;pointer-events:none;opacity:0;transform:scale(.5);transition:.25s;z-index:8}
-#cheer.on{opacity:1;transform:scale(1)}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1d1a3a;
+    --fg: #fff4d6;
+    --card: #2c2860;
+    --bar: #3a3480;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #1d1a3a;
+  --fg: #fff4d6;
+  --card: #2c2860;
+  --bar: #3a3480;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
+  overflow: hidden;
+  text-align: center;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+#home {
+  padding: 14px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+h1 {
+  font-size: 30px;
+  margin: 8px 0;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 10px 0;
+}
+
+button {
+  font: inherit;
+  border: 0;
+  border-radius: 22px;
+  padding: 14px 18px;
+  font-size: 20px;
+  background: var(--card);
+  color: var(--fg);
+  box-shadow: 0 3px 0 rgba(0,0,0,.15);
+}
+
+.age button {
+  flex: 1;
+}
+
+.age button.on {
+  background: var(--b);
+  color: #fff;
+}
+
+.g {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  font-size: 24px;
+  padding: 18px;
+  color: #fff;
+}
+
+.g small {
+  display: block;
+  font-size: 14px;
+  opacity: .9;
+  margin-top: 4px;
+}
+
+#err {
+  color: #d93025;
+  min-height: 20px;
+  font-size: 15px;
+}
+
+#game {
+  height: 100%;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+#top {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+#top button {
+  padding: 8px 14px;
+  font-size: 18px;
+}
+
+#st {
+  font-size: 26px;
+  font-weight: 700;
+}
+
+#pr {
+  font-size: clamp(22px, 5vw, 40px);
+  font-weight: 700;
+  min-height: 1.3em;
+  padding: 0 10px;
+  flex-shrink: 0;
+}
+
+#an {
+  font-size: min(43vh, 68vw);
+  line-height: 1.1;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .08s;
+}
+
+#an.cbox {
+  flex: none;
+  width: min(58vh, 78vw);
+  height: min(58vh, 78vw);
+  max-width: 520px;
+  max-height: 520px;
+  margin: 8px 0;
+  border-radius: 40px;
+  justify-content: center;
+  font-size: min(23vh, 35vw);
+  box-shadow: 0 8px 0 rgba(0,0,0,.2);
+  border: 8px solid var(--card);
+  box-sizing: border-box;
+}
+
+#bx {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  width: 100%;
+}
+
+#bx svg {
+  height: min(43vh, 64vw);
+  width: auto;
+  max-width: 90vw;
+  overflow: visible;
+}
+
+#ar {
+  font-size: 9vh;
+  line-height: 1;
+}
+
+.bar {
+  width: 80%;
+  max-width: 520px;
+  height: 22px;
+  background: var(--bar);
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 6px 0;
+  flex-shrink: 0;
+}
+
+.bar i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--c);
+  transition: width .1s;
+}
+
+#pg i {
+  background: var(--a);
+}
+
+.lb {
+  font-size: 14px;
+  opacity: .8;
+  flex-shrink: 0;
+}
+
+/* نافذة الكاميرا المكبّرة */
+#v {
+  position: fixed;
+  left: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+
+  width: min(44vw, 360px);
+  height: min(38vw, 300px);
+
+  min-width: 230px;
+  min-height: 190px;
+
+  object-fit: cover;
+  object-position: center;
+  border-radius: 26px;
+  border: 6px solid #fff;
+
+  transform: scaleX(-1);
+  background: #000;
+  box-shadow: 0 8px 28px #0007;
+
+  z-index: 20;
+  box-sizing: border-box;
+}
+
+#cheer {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12vw;
+  font-weight: 800;
+  color: #ffb300;
+  text-shadow: 0 4px 0 #0003;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(.5);
+  transition: .25s;
+  z-index: 30;
+}
+
+#cheer.on {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* إعدادات الآيفون */
+@media (max-width: 600px) {
+  #top button {
+    padding: 7px 10px;
+    font-size: 16px;
+  }
+
+  #st {
+    font-size: 21px;
+  }
+
+  #pr {
+    font-size: clamp(22px, 5vw, 34px);
+  }
+
+  #v {
+    width: 44vw;
+    height: 34vw;
+    min-width: 0;
+    min-height: 0;
+    max-width: 300px;
+    max-height: 250px;
+
+    left: 12px;
+    bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    border-width: 5px;
+    border-radius: 24px;
+  }
+
+  #an.cbox {
+    width: min(58vh, 78vw);
+    height: min(58vh, 78vw);
+  }
+}
+
+/* الشاشات القصيرة */
+@media (max-height: 700px) {
+  #v {
+    width: min(36vw, 280px);
+    height: min(28vw, 210px);
+  }
+
+  #an.cbox {
+    width: min(44vh, 70vw);
+    height: min(44vh, 70vw);
+  }
+
+  #pr {
+    font-size: clamp(20px, 4vw, 30px);
+  }
+
+  .bar {
+    margin: 3px 0;
+    height: 18px;
+  }
+}
 </style>
 </head>
+
 <body>
+
 <section id="home">
-<h1>🐾 العب وتحرّك</h1>
-<div class="row age">
-<button id="a3" class="on" onclick="setAge(3)">👶 عمر ٣ سنوات</button>
-<button id="a5" onclick="setAge(5)">🧒 عمر ٥ سنوات</button>
-</div>
-<button class="g" style="background:var(--a)" onclick="start('dance')">💃 ارقص مع الحيوانات<small>الكاميرا تقيس حركتك وتعطيك نجومًا وموسيقى</small></button>
-<button class="g" style="background:var(--b)" onclick="start('move')">🧒 قلّد الحركة<small>قلّد حركات الطفل المتحرك</small></button>
-<button class="g" style="background:var(--c)" onclick="start('color')">🎨 ابحث عن اللون<small>هات شيئًا بنفس اللون وأرِه للكاميرا</small></button>
-<div id="err"></div>
-<p class="lb">ضع الهاتف أمام الأطفال على حامل، بمسافة ٢ إلى ٣ أمتار. الصورة لا تُرسل لأي مكان. شغّل صوت الهاتف.</p>
+  <h1>🐾 العب وتحرّك</h1>
+
+  <div class="row age">
+    <button id="a3" class="on" onclick="setAge(3)">👶 عمر ٣ سنوات</button>
+    <button id="a5" onclick="setAge(5)">🧒 عمر ٥ سنوات</button>
+  </div>
+
+  <button class="g" style="background:var(--a)" onclick="start('dance')">
+    💃 ارقص مع الحيوانات
+    <small>الكاميرا تقيس حركتك وتعطيك نجومًا</small>
+  </button>
+
+  <button class="g" style="background:var(--b)" onclick="start('move')">
+    🧒 قلّد الحركة
+    <small>الولد يتحرك لأعلى أو أسفل أو يمين أو يسار</small>
+  </button>
+
+  <button class="g" style="background:var(--c)" onclick="start('color')">
+    🎨 ابحث عن اللون
+    <small>هات شيئًا بنفس اللون الكبير وأرِه للكاميرا</small>
+  </button>
+
+  <div id="err"></div>
+
+  <p class="lb">
+    ضع الهاتف أمام الأطفال على حامل، بمسافة ٢ إلى ٣ أمتار.
+    الصورة لا تُرسل لأي مكان. شغّل صوت الهاتف.
+  </p>
 </section>
 
 <section id="game" hidden>
-<div id="top">
-<button onclick="home()">⬅️ رجوع</button>
-<span id="st">⭐ 0</span>
-<button onclick="flip()">🔄</button>
-</div>
-<div id="pr"></div>
-<div id="an">🐻</div>
-<div id="bx" hidden>
-<div id="ar">⬆️</div>
-<svg id="boy" viewBox="0 0 200 270">
-<g id="bb">
-<g stroke="#3b5bdb" stroke-width="19" stroke-linecap="round">
-<line x1="86" y1="165" x2="82" y2="232"/>
-<line x1="114" y1="165" x2="118" y2="232"/>
-</g>
-<ellipse cx="78" cy="241" rx="19" ry="9" fill="#444"/>
-<ellipse cx="122" cy="241" rx="19" ry="9" fill="#444"/>
-<g id="aL"><line x1="68" y1="108" x2="68" y2="172" stroke="#ffcc99" stroke-width="16" stroke-linecap="round"/></g>
-<g id="aR"><line x1="132" y1="108" x2="132" y2="172" stroke="#ffcc99" stroke-width="16" stroke-linecap="round"/></g>
-<rect x="60" y="92" width="80" height="84" rx="26" fill="#ff7a59"/>
-<circle cx="100" cy="62" r="38" fill="#ffd9b3"/>
-<path d="M62 56 Q100 4 138 56 Q120 34 100 38 Q80 34 62 56Z" fill="#4a2c17"/>
-<circle cx="87" cy="66" r="4.5" fill="#222"/>
-<circle cx="113" cy="66" r="4.5" fill="#222"/>
-<path d="M88 81 Q100 93 112 81" stroke="#222" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-</g>
-</svg>
-</div>
-<div class="lb">مقياس الحركة</div>
-<div class="bar" id="mt"><i></i></div>
-<div class="lb">النجمة القادمة</div>
-<div class="bar" id="pg"><i></i></div>
+  <div id="top">
+    <button onclick="home()">⬅️ رجوع</button>
+    <span id="st">⭐ 0 / 5</span>
+    <button onclick="flip()">🔄</button>
+  </div>
+
+  <div id="pr"></div>
+  <div id="an">🐻</div>
+
+  <div id="bx" hidden>
+    <div id="ar">⬆️</div>
+
+    <svg id="boy" viewBox="0 0 200 270">
+      <g id="bb">
+        <g stroke="#3b5bdb" stroke-width="19" stroke-linecap="round">
+          <line x1="86" y1="165" x2="82" y2="232"/>
+          <line x1="114" y1="165" x2="118" y2="232"/>
+        </g>
+
+        <ellipse cx="78" cy="241" rx="19" ry="9" fill="#444"/>
+        <ellipse cx="122" cy="241" rx="19" ry="9" fill="#444"/>
+
+        <g id="aL">
+          <line x1="68" y1="108" x2="68" y2="172"
+            stroke="#ffcc99" stroke-width="16" stroke-linecap="round"/>
+        </g>
+
+        <g id="aR">
+          <line x1="132" y1="108" x2="132" y2="172"
+            stroke="#ffcc99" stroke-width="16" stroke-linecap="round"/>
+        </g>
+
+        <rect x="60" y="92" width="80" height="84" rx="26" fill="#ff7a59"/>
+        <circle cx="100" cy="62" r="38" fill="#ffd9b3"/>
+
+        <path d="M62 56 Q100 4 138 56 Q120 34 100 38 Q80 34 62 56Z"
+          fill="#4a2c17"/>
+
+        <circle cx="87" cy="66" r="4.5" fill="#222"/>
+        <circle cx="113" cy="66" r="4.5" fill="#222"/>
+
+        <path d="M88 81 Q100 93 112 81"
+          stroke="#222" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="lb">مقياس الحركة</div>
+  <div class="bar" id="mt"><i></i></div>
+
+  <div class="lb">النجمة القادمة</div>
+  <div class="bar" id="pg"><i></i></div>
 </section>
 
 <video id="v" playsinline muted autoplay hidden></video>
 <div id="cheer"></div>
 
 <script>
-const $=i=>document.getElementById(i);
-const GOAL=5;
-let age=3,game='',stars=0,stream=null,facing='user',ac=null,run=false,last=0,prev=null,sm=0,prog=0,hold=0,mv=null,col=null,mvT=0,an=false,endT=0,musicTimer=null,musicStep=0;
+const $ = id => document.getElementById(id);
+const GOAL = 5;
 
-const v=$('v');
-const cv=document.createElement('canvas');
-cv.width=160;
-cv.height=120;
-const cx=cv.getContext('2d',{willReadFrequently:true});
+let age = 3;
+let game = '';
+let stars = 0;
+let stream = null;
+let facing = 'user';
+let ac = null;
+let run = false;
+let last = 0;
+let prev = null;
+let sm = 0;
+let prog = 0;
+let hold = 0;
+let mv = null;
+let col = null;
+let mvT = 0;
+let an = false;
+let endT = 0;
+let musicTimer = null;
+let musicStep = 0;
 
-const COL=[
-['أحمر','🐞',h=>h<14||h>346,'#e53935'],
-['أصفر','🐥',h=>h>44&&h<68,'#fdd835'],
-['أخضر','🐸',h=>h>85&&h<160,'#43a047'],
-['أزرق','🐳',h=>h>195&&h<250,'#1e88e5'],
-['برتقالي','🦊',h=>h>=18&&h<=38,'#fb8c00']
+const v = $('v');
+const cv = document.createElement('canvas');
+cv.width = 48;
+cv.height = 36;
+
+const cx = cv.getContext('2d', { willReadFrequently: true });
+
+const COL = [
+  ['أحمر', '🐞', h => h < 14 || h > 346, '#e53935'],
+  ['أصفر', '🐥', h => h > 44 && h < 68, '#fdd835'],
+  ['أخضر', '🐸', h => h > 85 && h < 160, '#43a047'],
+  ['أزرق', '🐳', h => h > 195 && h < 250, '#1e88e5'],
+  ['برتقالي', '🦊', h => h >= 18 && h <= 38, '#fb8c00']
 ];
 
-const MOV=[
-['ارفع يديك للأعلى','⬆️','top'],
-['انزل للأسفل','⬇️','bot'],
-['تحرك ناحية اليسار','⬅️','left'],
-['تحرك ناحية اليمين','➡️','right'],
-['اقفز عاليًا','↕️','all']
+const MOV = [
+  ['ارفع يديك للأعلى', '⬆️', 'top'],
+  ['انزل للأسفل', '⬇️', 'bot'],
+  ['تحرك ناحية اليسار', '⬅️', 'left'],
+  ['تحرك ناحية اليمين', '➡️', 'right'],
+  ['اقفز عاليًا', '↕️', 'all']
 ];
 
-const DAN=['🐻','🦁','🐼','🐵','🐶','🦄','🐯','🐸'];
-const OK=['أحسنت','أحسنت يا بطل','برافو','ممتاز','أحسنت'];
+const DAN = ['🐻','🦁','🐼','🐵','🐶','🦄','🐯','🐸'];
 
-function setAge(a){
-age=a;
-$('a3').className=a==3?'on':'';
-$('a5').className=a==5?'on':'';
+const OK = [
+  'أحسنت',
+  'أحسنت يا بطل',
+  'برافو',
+  'ممتاز',
+  'أحسنت'
+];
+
+function setAge(a) {
+  age = a;
+  $('a3').className = a === 3 ? 'on' : '';
+  $('a5').className = a === 5 ? 'on' : '';
 }
 
-function say(t,cancel=false){
-try{
-if(!window.speechSynthesis)return;
-if(cancel)speechSynthesis.cancel();
-const u=new SpeechSynthesisUtterance(t);
-u.lang='ar-SA';
-const vs=speechSynthesis.getVoices().filter(x=>x.lang.replace('_','-').toLowerCase().startsWith('ar'));
-u.voice=vs.find(x=>/female|woman|girl|laila|layla|mariam|maryam|zeina|zaina|sara|salma|hoda|هدى|ليلى|مريم/i.test(x.name))
-||vs.find(x=>/ar-SA|ar-EG/i.test(x.lang))
-||vs[0]||null;
-u.pitch=1.22;
-u.rate=.96;
-u.volume=1;
-speechSynthesis.speak(u);
-}catch(e){}
+function say(t, cancel = false) {
+  try {
+    if (!window.speechSynthesis) return;
+
+    if (cancel) speechSynthesis.cancel();
+
+    const u = new SpeechSynthesisUtterance(t);
+    u.lang = 'ar-SA';
+
+    const voices = speechSynthesis.getVoices()
+      .filter(x => x.lang.replace('_','-').toLowerCase().startsWith('ar'));
+
+    u.voice =
+      voices.find(x =>
+        /female|woman|girl|laila|layla|mariam|maryam|zeina|zaina|sara|salma|hoda|هدى|ليلى|مريم/i.test(x.name)
+      ) ||
+      voices.find(x => /ar-SA|ar-EG/i.test(x.lang)) ||
+      voices[0] ||
+      null;
+
+    u.pitch = 1.22;
+    u.rate = .96;
+    u.volume = 1;
+
+    speechSynthesis.speak(u);
+  } catch (e) {}
 }
 
-function startMusic(){
-stopMusic();
-if(!ac)return;
-ac.resume?.();
-musicStep=0;
-const melody=[523.25,659.25,783.99,659.25,587.33,698.46,880,698.46];
+function startMusic() {
+  stopMusic();
+  if (!ac) return;
 
-musicTimer=setInterval(()=>{
-if(!run||game!=='dance')return;
-const t=ac.currentTime;
-const note=melody[musicStep%melody.length];
+  ac.resume?.();
+  musicStep = 0;
 
-[
-[note,.11,.10,'triangle'],
-[musicStep%2?130.81:98,.16,.055,'sine']
-].forEach(([f,d,gain,type])=>{
-const o=ac.createOscillator();
-const g=ac.createGain();
-o.type=type;
-o.frequency.setValueAtTime(f,t);
-g.gain.setValueAtTime(.001,t);
-g.gain.exponentialRampToValueAtTime(gain,t+.015);
-g.gain.exponentialRampToValueAtTime(.001,t+d);
-o.connect(g);
-g.connect(ac.destination);
-o.start(t);
-o.stop(t+d+.02);
-});
+  const melody = [
+    523.25, 659.25, 783.99, 659.25,
+    587.33, 698.46, 880, 698.46
+  ];
 
-if(musicStep%2===0){
-const o=ac.createOscillator();
-const g=ac.createGain();
-o.type='square';
-o.frequency.value=70;
-g.gain.setValueAtTime(.045,t);
-g.gain.exponentialRampToValueAtTime(.001,t+.06);
-o.connect(g);
-g.connect(ac.destination);
-o.start(t);
-o.stop(t+.07);
-}
-musicStep++;
-},260);
-}
+  musicTimer = setInterval(() => {
+    if (!run || game !== 'dance') return;
 
-function stopMusic(){
-if(musicTimer){
-clearInterval(musicTimer);
-musicTimer=null;
-}
-}
+    const t = ac.currentTime;
+    const note = melody[musicStep % melody.length];
 
-function beep(f,d){
-if(!ac)return;
-const o=ac.createOscillator();
-const g=ac.createGain();
-o.frequency.value=f;
-o.type='triangle';
-g.gain.value=.15;
-o.connect(g);
-g.connect(ac.destination);
-o.start();
-o.stop(ac.currentTime+(d||.15));
+    [
+      [note, .11, .10, 'triangle'],
+      [musicStep % 2 ? 130.81 : 98, .16, .055, 'sine']
+    ].forEach(([f, d, gain, type]) => {
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+
+      o.type = type;
+      o.frequency.setValueAtTime(f, t);
+
+      g.gain.setValueAtTime(.001, t);
+      g.gain.exponentialRampToValueAtTime(gain, t + .015);
+      g.gain.exponentialRampToValueAtTime(.001, t + d);
+
+      o.connect(g);
+      g.connect(ac.destination);
+
+      o.start(t);
+      o.stop(t + d + .02);
+    });
+
+    if (musicStep % 2 === 0) {
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+
+      o.type = 'square';
+      o.frequency.value = 70;
+
+      g.gain.setValueAtTime(.045, t);
+      g.gain.exponentialRampToValueAtTime(.001, t + .06);
+
+      o.connect(g);
+      g.connect(ac.destination);
+
+      o.start(t);
+      o.stop(t + .07);
+    }
+
+    musicStep++;
+  }, 260);
 }
 
-function banner(t){
-const c=$('cheer');
-c.textContent=t;
-c.classList.add('on');
-setTimeout(()=>c.classList.remove('on'),1000);
+function stopMusic() {
+  if (musicTimer) {
+    clearInterval(musicTimer);
+    musicTimer = null;
+  }
 }
 
-function ok(){
-stars++;
-$('st').textContent='⭐ '+stars+' / '+GOAL;
-[660,880,1175].forEach((f,i)=>setTimeout(()=>beep(f),i*110));
-banner(['أحسنت! 🌟','برافو! 🎉','رائع! 👏'][stars%3]);
-say(OK[Math.random()*OK.length|0]);
-if(stars>=GOAL)finish();
-else next();
+function beep(f, d = .15) {
+  if (!ac) return;
+
+  const o = ac.createOscillator();
+  const g = ac.createGain();
+
+  o.frequency.value = f;
+  o.type = 'triangle';
+  g.gain.value = .15;
+
+  o.connect(g);
+  g.connect(ac.destination);
+
+  o.start();
+  o.stop(ac.currentTime + d);
 }
 
-function fail(){
-banner('حاول مرة أخرى 💪');
-say('حاول مرة أخرى');
-next();
+function banner(t) {
+  const c = $('cheer');
+  c.textContent = t;
+  c.classList.add('on');
+
+  setTimeout(() => c.classList.remove('on'), 1000);
 }
 
-function finish(){
-run=false;
-stopMusic();
-$('pr').textContent='🏆 انتهت اللعبة! جمعت كل النجوم';
-say('أحسنت يا بطل! لقد جمعت كل النجوم. إلى اللقاء، وأراك قريبًا');
-endT=setTimeout(home,7000);
+function ok() {
+  stars++;
+  $('st').textContent = '⭐ ' + stars + ' / ' + GOAL;
+
+  [660, 880, 1175].forEach((f, i) => {
+    setTimeout(() => beep(f), i * 110);
+  });
+
+  banner(['أحسنت! 🌟', 'برافو! 🎉', 'رائع! 👏'][stars % 3]);
+  say(OK[Math.random() * OK.length | 0]);
+
+  if (stars >= GOAL) {
+    finish();
+  } else {
+    next();
+  }
 }
 
-async function cam(){
-if(stream)stream.getTracks().forEach(t=>t.stop());
-stream=await navigator.mediaDevices.getUserMedia({
-video:{
-facingMode:facing,
-width:{ideal:1280},
-height:{ideal:720},
-frameRate:{ideal:30,max:60}
-},
-audio:false
-});
-v.srcObject=stream;
-v.hidden=false;
-await v.play();
-prev=null;
+function fail() {
+  banner('حاول مرة أخرى 💪');
+  say('حاول مرة أخرى');
+  next();
 }
 
-async function start(g){
-game=g;
-clearTimeout(endT);
-try{
-if(window.speechSynthesis){
-const u=new SpeechSynthesisUtterance(' ');
-speechSynthesis.speak(u);
-}
-ac=ac||(new(window.AudioContext||window.webkitAudioContext)());
-await ac.resume();
-await cam();
-}catch(e){
-$('err').textContent='لم تفتح الكاميرا. اسمح بالكاميرا لموقع Safari، وافتح الصفحة عبر رابط https.';
-return;
+function finish() {
+  run = false;
+  stopMusic();
+
+  $('pr').textContent = '🏆 انتهت اللعبة! جمعت كل النجوم';
+
+  say('أحسنت يا بطل! لقد جمعت كل النجوم. إلى اللقاء، وأراك قريبًا');
+
+  endT = setTimeout(home, 7000);
 }
 
-$('home').hidden=true;
-$('game').hidden=false;
-stars=0;
-prog=0;
-sm=0;
-hold=0;
-last=0;
-prev=null;
-$('st').textContent='⭐ 0 / '+GOAL;
-run=true;
+async function cam() {
+  if (stream) {
+    stream.getTracks().forEach(t => t.stop());
+  }
 
-say(
-g=='dance'?'مرحبًا يا أبطال! هيا نرقص':
-g=='move'?'مرحبًا يا أبطال! هيا نقلّد الحركة':
-'مرحبًا يا أبطال! هيا نبحث عن الألوان',
-true
-);
+  stream = await navigator.mediaDevices.getUserMedia({
+    video: {
+      facingMode: facing,
+      width: { ideal: 1280 },
+      height: { ideal: 720 },
+      frameRate: { ideal: 30, max: 60 }
+    },
+    audio: false
+  });
 
-next();
-if(g==='dance')startMusic();
-requestAnimationFrame(loop);
-if(!an){
-an=true;
-requestAnimationFrame(animate);
-}
+  v.srcObject = stream;
+  v.hidden = false;
+
+  await v.play();
+  prev = null;
 }
 
-function home(){
-run=false;
-stopMusic();
-clearTimeout(endT);
-try{speechSynthesis.cancel()}catch(e){}
-$('game').hidden=true;
-$('home').hidden=false;
-v.hidden=true;
-if(stream){
-stream.getTracks().forEach(t=>t.stop());
-stream=null;
-}
-}
+async function start(g) {
+  game = g;
+  clearTimeout(endT);
 
-async function flip(){
-facing=facing=='user'?'environment':'user';
-try{await cam()}catch(e){}
-}
+  try {
+    if (window.speechSynthesis) {
+      const u = new SpeechSynthesisUtterance(' ');
+      speechSynthesis.speak(u);
+    }
 
-function next(){
-hold=0;
-mvT=Date.now();
-$('an').className='';
-$('an').style.background='';
-$('bx').hidden=game!='move';
-$('an').hidden=game=='move';
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
 
-if(game=='dance'){
-$('pr').textContent='ارقص مع الحيوان! 💃';
-$('an').textContent=DAN[stars%DAN.length];
-}
-else if(game=='move'){
-const p=age==3?[0,2,3,4]:[0,1,2,3,4];
-mv=MOV[p[Math.random()*p.length|0]];
-$('pr').textContent=mv[0];
-$('ar').textContent=mv[1];
-say(mv[0]);
-}
-else{
-col=COL[Math.random()*COL.length|0];
-$('pr').textContent='هات شيئًا '+col[0]+' وأرِه للكاميرا!';
-$('an').className='cbox';
-$('an').style.background=col[3];
-$('an').textContent=col[1];
-say('هات شيئًا '+col[0]+' وأرِه للكاميرا');
-}
-}
+    await cam();
+  } catch (e) {
+    $('err').textContent =
+      'لم تفتح الكاميرا. اسمح بالكاميرا لموقع Safari، وافتح الصفحة عبر رابط https.';
+    return;
+  }
 
-function match(r,g,b){
-const max=Math.max(r,g,b);
-const min=Math.min(r,g,b);
-const delta=max-min;
+  $('home').hidden = true;
+  $('game').hidden = false;
 
-if(max<65||delta<35||delta/(max||1)<.28)return false;
+  stars = 0;
+  prog = 0;
+  hold = 0;
+  sm = 0;
+  prev = null;
 
-let h;
-if(delta===0)h=0;
-else if(max===r)h=60*(((g-b)/delta)%6);
-else if(max===g)h=60*((b-r)/delta+2);
-else h=60*((r-g)/delta+4);
+  $('st').textContent = '⭐ 0 / ' + GOAL;
+  run = true;
 
-if(h<0)h+=360;
-return col[2](h);
+  say(
+    g === 'dance'
+      ? 'مرحبًا يا أبطال! هيا نرقص'
+      : g === 'move'
+      ? 'مرحبًا يا أبطال! هيا نقلّد الحركة'
+      : 'مرحبًا يا أبطال! هيا نبحث عن الألوان',
+    true
+  );
+
+  next();
+
+  if (g === 'dance') startMusic();
+
+  requestAnimationFrame(loop);
+
+  if (!an) {
+    an = true;
+    requestAnimationFrame(animate);
+  }
 }
 
-function animate(t){
-if($('game').hidden){
-an=false;
-return;
-}
-requestAnimationFrame(animate);
-if(game!='move'||!mv)return;
+function home() {
+  run = false;
+  stopMusic();
+  clearTimeout(endT);
 
-const k=mv[2];
-const p=(Math.sin(t/260)+1)/2;
-let tx=0,ty=0,sy=1,rot=0,aL=10,aR=-10;
+  try {
+    speechSynthesis.cancel();
+  } catch (e) {}
 
-if(k=='top'){
-aL=150+25*p;
-aR=-aL;
-}
-else if(k=='bot'){
-sy=1-.3*p;
-aL=40;
-aR=-40;
-}
-else if(k=='left'){
-tx=-50*p;
-rot=-8*p;
-aL=aR=90;
-}
-else if(k=='right'){
-tx=50*p;
-rot=8*p;
-aL=aR=-90;
-}
-else{
-ty=-55*Math.abs(Math.sin(t/260));
-aL=140;
-aR=-140;
+  $('game').hidden = true;
+  $('home').hidden = false;
+  v.hidden = true;
+
+  if (stream) {
+    stream.getTracks().forEach(t => t.stop());
+    stream = null;
+  }
 }
 
-$('bb').setAttribute(
-'transform',
-'translate('+tx+' '+ty+') rotate('+rot+' 100 245) translate(100 245) scale(1 '+sy+') translate(-100 -245)'
-);
-$('aL').setAttribute('transform','rotate('+aL+' 68 108)');
-$('aR').setAttribute('transform','rotate('+aR+' 132 108)');
+async function flip() {
+  facing = facing === 'user' ? 'environment' : 'user';
+
+  try {
+    await cam();
+  } catch (e) {}
 }
 
-function loop(t){
-if(!run)return;
-requestAnimationFrame(loop);
-if(t-last<80||v.readyState<2)return;
-last=t;
+function next() {
+  hold = 0;
+  mvT = Date.now();
 
-cx.save();
-cx.translate(160,0);
-cx.scale(-1,1);
-cx.drawImage(v,0,0,160,120);
-cx.restore();
+  $('an').className = '';
+  $('an').style.background = '';
 
-const d=cx.getImageData(0,0,160,120).data;
-const n=160*120;
-let a=0,tp=0,bt=0,l=0,r=0,cc=0;
+  $('bx').hidden = game !== 'move';
+  $('an').hidden = game === 'move';
 
-for(let i=0;i<n;i++){
-const o=i*4;
-const x=i%160;
-const y=i/160|0;
+  if (game === 'dance') {
+    $('pr').textContent = 'ارقص مع الحيوان! 💃';
+    $('an').textContent = DAN[stars % DAN.length];
+  } else if (game === 'move') {
+    const p = age === 3 ? [0, 2, 3, 4] : [0, 1, 2, 3, 4];
 
-if(prev){
-const diff=Math.abs(d[o]-prev[o])
-+Math.abs(d[o+1]-prev[o+1])
-+Math.abs(d[o+2]-prev[o+2]);
+    mv = MOV[p[Math.random() * p.length | 0]];
 
-if(diff>105){
-a++;
-if(y<47)tp++;
-if(y>73)bt++;
-if(x<80)l++;
-else r++;
-}
-}
+    $('pr').textContent = mv[0];
+    $('ar').textContent = mv[1];
 
-if(game=='color'&&x>26&&x<134&&y>20&&y<100){
-if(match(d[o],d[o+1],d[o+2]))cc++;
-}
+    say(mv[0]);
+  } else {
+    col = COL[Math.random() * COL.length | 0];
+
+    $('pr').textContent =
+      'هات شيئًا ' + col[0] + ' وأرِه للكاميرا!';
+
+    $('an').className = 'cbox';
+    $('an').style.background = col[3];
+    $('an').textContent = col[1];
+
+    say('هات شيئًا ' + col[0] + ' وأرِه للكاميرا');
+  }
 }
 
-prev=d;
-sm=sm*.6+(a/n)*.4;
-const lv=Math.min(1,sm/.16);
+function match(r, g, b) {
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const delta = max - min;
 
-$('mt').firstChild.style.width=(lv*100)+'%';
+  if (max < 65 || delta < 35 || delta / (max || 1) < .28) {
+    return false;
+  }
 
-$('an').style.transform=game=='dance'
-?'rotate('+(Math.sin(t/140)*(4+lv*22))+'deg) scale('+(1+lv*.25)+')'
-:'none';
+  let h;
 
-if(game=='dance'){
-if(sm>(age==3?.03:.06))prog+=lv;
-const need=age==3?20:30;
-$('pg').firstChild.style.width=Math.min(100,prog/need*100)+'%';
+  if (delta === 0) {
+    h = 0;
+  } else if (max === r) {
+    h = 60 * (((g - b) / delta) % 6);
+  } else if (max === g) {
+    h = 60 * ((b - r) / delta + 2);
+  } else {
+    h = 60 * ((r - g) / delta + 4);
+  }
 
-if(prog>=need){
-prog=0;
-ok();
+  if (h < 0) h += 360;
+
+  return col[2](h);
 }
-else if(Date.now()-mvT>14000){
-mvT=Date.now();
-say('حاول مرة أخرى، تحرّك أكثر');
+
+function animate(t) {
+  if ($('game').hidden) {
+    an = false;
+    return;
+  }
+
+  requestAnimationFrame(animate);
+
+  if (game !== 'move' || !mv) return;
+
+  const k = mv[2];
+  const p = (Math.sin(t / 260) + 1) / 2;
+
+  let tx = 0, ty = 0, sy = 1, rot = 0;
+  let aL = 10, aR = -10;
+
+  if (k === 'top') {
+    aL = 150 + 25 * p;
+    aR = -aL;
+  } else if (k === 'bot') {
+    sy = 1 - .3 * p;
+    aL = 40;
+    aR = -40;
+  } else if (k === 'left') {
+    tx = -50 * p;
+    rot = -8 * p;
+    aL = aR = 90;
+  } else if (k === 'right') {
+    tx = 50 * p;
+    rot = 8 * p;
+    aL = aR = -90;
+  } else {
+    ty = -55 * Math.abs(Math.sin(t / 260));
+    aL = 140;
+    aR = -140;
+  }
+
+  $('bb').setAttribute(
+    'transform',
+    'translate(' + tx + ' ' + ty + ') rotate(' + rot +
+    ' 100 245) translate(100 245) scale(1 ' + sy +
+    ') translate(-100 -245)'
+  );
+
+  $('aL').setAttribute('transform', 'rotate(' + aL + ' 68 108)');
+  $('aR').setAttribute('transform', 'rotate(' + aR + ' 132 108)');
 }
-}
-else if(game=='move'){
-const k=mv[2];
-const f=k=='top'?tp/7520:
-k=='bot'?bt/7360:
-k=='left'?l/9600:
-k=='right'?r/9600:
-a/n;
 
-if(f>(age==3?.08:.12))hold++;
-else hold=Math.max(0,hold-1);
+function loop(t) {
+  if (!run) return;
 
-$('pg').firstChild.style.width=Math.min(100,hold/(age==3?8:6)*100)+'%';
+  requestAnimationFrame(loop);
 
-if(hold>=(age==3?8:6))ok();
-else if(Date.now()-mvT>(age==3?12000:9000))fail();
-}
-else{
-if(cc/8736>.10)hold++;
-else hold=0;
+  if (t - last < 100 || v.readyState < 2) return;
 
-$('pg').firstChild.style.width=Math.min(100,hold/8*100)+'%';
+  last = t;
 
-if(hold>=8)ok();
-else if(Date.now()-mvT>20000)fail();
-}
+  cx.save();
+  cx.translate(48, 0);
+  cx.scale(-1, 1);
+  cx.drawImage(v, 0, 0, 48, 36);
+  cx.restore();
+
+  const d = cx.getImageData(0, 0, 48, 36).data;
+  const n = 48 * 36;
+
+  let a = 0;
+  let tp = 0;
+  let bt = 0;
+  let l = 0;
+  let r = 0;
+  let cc = 0;
+
+  for (let i = 0; i < n; i++) {
+    const o = i * 4;
+    const x = i % 48;
+    const y = Math.floor(i / 48);
+
+    if (prev &&
+        (
+          Math.abs(d[o] - prev[o]) +
+          Math.abs(d[o + 1] - prev[o + 1]) +
+          Math.abs(d[o + 2] - prev[o + 2])
+        ) > 105) {
+
+      a++;
+
+      if (y < 14) tp++;
+      if (y > 21) bt++;
+      if (x < 24) l++;
+      else r++;
+    }
+
+    if (
+      game === 'color' &&
+      x > 8 && x < 40 &&
+      y > 6 && y < 30 &&
+      match(d[o], d[o + 1], d[o + 2])
+    ) {
+      cc++;
+    }
+  }
+
+  prev = new Uint8ClampedArray(d);
+
+  sm = sm * .6 + (a / n) * .4;
+
+  const lv = Math.min(1, sm / .16);
+
+  $('mt').firstChild.style.width = (lv * 100) + '%';
+
+  $('an').style.transform =
+    game === 'dance'
+      ? 'rotate(' + (Math.sin(t / 140) * (4 + lv * 22)) +
+        'deg) scale(' + (1 + lv * .25) + ')'
+      : 'none';
+
+  if (game === 'dance') {
+    if (sm > (age === 3 ? .03 : .06)) prog += lv;
+
+    const need = age === 3 ? 20 : 30;
+
+    $('pg').firstChild.style.width =
+      Math.min(100, prog / need * 100) + '%';
+
+    if (prog >= need) {
+      prog = 0;
+      ok();
+    } else if (Date.now() - mvT > 14000) {
+      mvT = Date.now();
+      say('حاول مرة أخرى، تحرّك أكثر');
+    }
+  } else if (game === 'move') {
+    const k = mv[2];
+
+    const f =
+      k === 'top' ? tp / n :
+      k === 'bot' ? bt / n :
+      k === 'left' ? l / n :
+      k === 'right' ? r / n :
+      a / n;
+
+    if (f > (age === 3 ? .08 : .12)) {
+      hold++;
+    } else {
+      hold = Math.max(0, hold - 1);
+    }
+
+    $('pg').firstChild.style.width =
+      Math.min(100, hold / (age === 3 ? 8 : 6) * 100) + '%';
+
+    if (hold >= (age === 3 ? 8 : 6)) {
+      ok();
+    } else if (Date.now() - mvT > (age === 3 ? 12000 : 9000)) {
+      fail();
+    }
+  } else {
+    if (cc / n > .10) hold++;
+    else hold = 0;
+
+    $('pg').firstChild.style.width =
+      Math.min(100, hold / 8 * 100) + '%';
+
+    if (hold >= 8) {
+      ok();
+    } else if (Date.now() - mvT > 20000) {
+      fail();
+    }
+  }
 }
 </script>
 </body>
