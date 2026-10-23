@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -154,7 +153,8 @@ h1 {
   justify-content: center;
   font-size: min(39vh, 65vw);
   line-height: 1.1;
-  transition: transform .1s;
+  /* تعديل لضمان رقص وحركة جسد الحيوان بالكامل مع المحور */
+  transform-origin: center bottom;
 }
 
 #an.cbox {
@@ -288,58 +288,6 @@ h1 {
   padding: 15px 28px;
   margin-top: 15px;
 }
-
-@media (max-width: 600px) {
-  #v {
-    width: 58vw;
-    height: 48vw;
-    max-height: 36vh;
-    left: 10px;
-    bottom: calc(12px + env(safe-area-inset-bottom));
-    border-width: 5px;
-    border-radius: 25px;
-  }
-
-  #top button {
-    font-size: 15px;
-    padding: 8px 10px;
-  }
-
-  #st { font-size: 19px; }
-
-  #pr {
-    font-size: clamp(21px, 5vw, 32px);
-  }
-
-  #an.cbox {
-    width: min(48vh, 76vw);
-    height: min(48vh, 76vw);
-  }
-
-  .bar {
-    width: 82%;
-    height: 17px;
-    margin: 3px 0 5px;
-  }
-
-  .lb { font-size: 13px; }
-}
-
-@media (max-height: 700px) {
-  #v {
-    width: min(48vw, 330px);
-    height: min(36vw, 250px);
-    max-height: 34vh;
-  }
-
-  #an.cbox {
-    width: min(42vh, 70vw);
-    height: min(42vh, 70vw);
-  }
-
-  #pr { font-size: clamp(19px, 4vw, 28px); }
-  .bar { height: 15px; }
-}
 </style>
 </head>
 
@@ -461,7 +409,6 @@ let hold = 0;
 let mv = null;
 let col = null;
 let an = false;
-let endT = null;
 let musicTimer = null;
 let musicStep = 0;
 let gameStartedAt = 0;
@@ -515,8 +462,8 @@ function say(t, cancel = false) {
       voices.find(x => /ar-SA|ar-EG/i.test(x.lang)) ||
       voices[0] || null;
 
-    u.pitch = 1.2;
-    u.rate = 0.95;
+    u.pitch = 1.3;
+    u.rate = 1.0;
     u.volume = 1;
     speechSynthesis.speak(u);
   } catch (e) {}
@@ -526,38 +473,37 @@ function startMusic() {
   stopMusic();
   if (!ac) return;
 
-  ac.resume?.();
-  musicStep = 0;
+  if (ac.state === 'suspended') {
+    ac.resume();
+  }
 
-  const melody = [523.25, 659.25, 783.99, 659.25, 587.33, 698.46, 880, 698.46];
+  musicStep = 0;
+  const melody = [440, 523.25, 659.25, 783.99, 659.25, 523.25];
 
   musicTimer = setInterval(() => {
     if (!run || game !== 'dance') return;
 
-    const t = ac.currentTime;
-    const note = melody[musicStep % melody.length];
-
-    [
-      [note, .11, .10, 'triangle'],
-      [musicStep % 2 ? 130.81 : 98, .16, .055, 'sine']
-    ].forEach(([f, d, gain, type]) => {
+    try {
+      const t = ac.currentTime;
+      const note = melody[musicStep % melody.length];
+      
       const o = ac.createOscillator();
       const g = ac.createGain();
 
-      o.type = type;
-      o.frequency.setValueAtTime(f, t);
-      g.gain.setValueAtTime(.001, t);
-      g.gain.exponentialRampToValueAtTime(gain, t + .015);
-      g.gain.exponentialRampToValueAtTime(.001, t + d);
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(note, t);
+      g.gain.setValueAtTime(0.001, t);
+      g.gain.exponentialRampToValueAtTime(0.08, t + 0.05);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
 
       o.connect(g);
       g.connect(ac.destination);
       o.start(t);
-      o.stop(t + d + .02);
-    });
+      o.stop(t + 0.25);
 
-    musicStep++;
-  }, 260);
+      musicStep++;
+    } catch (e) {}
+  }, 250);
 }
 
 function stopMusic() {
@@ -569,17 +515,19 @@ function stopMusic() {
 
 function beep(f, d = .15) {
   if (!ac) return;
+  try {
+    if (ac.state === 'suspended') ac.resume();
+    const o = ac.createOscillator();
+    const g = ac.createGain();
 
-  const o = ac.createOscillator();
-  const g = ac.createGain();
-
-  o.frequency.value = f;
-  o.type = 'triangle';
-  g.gain.value = .15;
-  o.connect(g);
-  g.connect(ac.destination);
-  o.start();
-  o.stop(ac.currentTime + d);
+    o.frequency.value = f;
+    o.type = 'sine';
+    g.gain.value = .12;
+    o.connect(g);
+    g.connect(ac.destination);
+    o.start();
+    o.stop(ac.currentTime + d);
+  } catch(e) {}
 }
 
 function banner(t) {
@@ -618,17 +566,14 @@ function endSession() {
 
   $('timer').textContent = '00:00';
   $('finalStars').textContent = '⭐ عدد النجوم التي جمعتها: ' + stars;
-
   $('timeup').hidden = false;
 
   try {
     if (speechSynthesis) {
       speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(
-        'انتهى وقت اللعب. أحسنت يا بطل!'
-      );
+      const u = new SpeechSynthesisUtterance('انتهى وقت اللعب. أحسنت يا بطل!');
       u.lang = 'ar-SA';
-      u.pitch = 1.15;
+      u.pitch = 1.2;
       speechSynthesis.speak(u);
     }
   } catch (e) {}
@@ -640,9 +585,9 @@ function ok() {
   stars++;
   $('st').textContent = '⭐ ' + stars + ' / ' + GOAL;
 
-  [660, 880, 1175].forEach((f, i) => setTimeout(() => {
+  [523, 659, 784].forEach((f, i) => setTimeout(() => {
     if (run) beep(f);
-  }, i * 110));
+  }, i * 100));
 
   banner(['أحسنت! 🌟', 'برافو! 🎉', 'رائع! 👏'][stars % 3]);
   say(OK[Math.random() * OK.length | 0]);
@@ -657,13 +602,6 @@ function ok() {
   } else {
     next();
   }
-}
-
-function fail() {
-  if (!run) return;
-  banner('حاول مرة أخرى 💪');
-  say('حاول مرة أخرى');
-  next();
 }
 
 async function cam() {
@@ -701,8 +639,7 @@ async function start(g) {
     if (ac.state === 'suspended') await ac.resume();
     await cam();
   } catch (e) {
-    $('err').textContent =
-      'تعذّر فتح الكاميرا. اسمح للمتصفح باستخدام الكاميرا وافتح الموقع عبر HTTPS.';
+    $('err').textContent = 'تعذّر فتح الكاميرا. اسمح للمتصفح باستخدام الكاميرا.';
     return;
   }
 
@@ -738,11 +675,6 @@ async function start(g) {
   if (g === 'dance') startMusic();
 
   requestAnimationFrame(loop);
-
-  if (!an) {
-    an = true;
-    requestAnimationFrame(animate);
-  }
 }
 
 function home() {
@@ -771,9 +703,7 @@ function home() {
 
 async function flip() {
   if (!run) return;
-
   facing = facing === 'user' ? 'environment' : 'user';
-
   try {
     await cam();
   } catch (e) {
@@ -789,7 +719,7 @@ function next() {
   $('pg').firstElementChild.style.width = '0%';
 
   $('an').className = '';
-  $('an').style.background = '';
+  $('an').style.transform = '';
   $('bx').hidden = game !== 'move';
   $('an').hidden = game === 'move';
 
@@ -820,63 +750,13 @@ function match(r, g, b) {
   if (max < 65 || delta < 35 || delta / (max || 1) < .28) return false;
 
   let h;
-
   if (delta === 0) h = 0;
   else if (max === r) h = 60 * (((g - b) / delta) % 6);
   else if (max === g) h = 60 * ((b - r) / delta + 2);
   else h = 60 * ((r - g) / delta + 4);
 
   if (h < 0) h += 360;
-
   return col[2](h);
-}
-
-function animate(t) {
-  if ($('game').hidden || !run) {
-    an = false;
-    return;
-  }
-
-  requestAnimationFrame(animate);
-
-  if (game !== 'move' || !mv) return;
-
-  const k = mv[2];
-  const p = (Math.sin(t / 260) + 1) / 2;
-
-  let tx = 0, ty = 0, sy = 1, rot = 0;
-  let aL = 10, aR = -10;
-
-  if (k === 'top') {
-    aL = 150 + 25 * p;
-    aR = -aL;
-  } else if (k === 'bot') {
-    sy = 1 - .3 * p;
-    aL = 40;
-    aR = -40;
-  } else if (k === 'left') {
-    tx = -50 * p;
-    rot = -8 * p;
-    aL = aR = 90;
-  } else if (k === 'right') {
-    tx = 50 * p;
-    rot = 8 * p;
-    aL = aR = -90;
-  } else {
-    ty = -55 * Math.abs(Math.sin(t / 260));
-    aL = 140;
-    aR = -140;
-  }
-
-  $('bb').setAttribute(
-    'transform',
-    'translate(' + tx + ' ' + ty + ') rotate(' + rot +
-    ' 100 245) translate(100 245) scale(1 ' + sy +
-    ') translate(-100 -245)'
-  );
-
-  $('aL').setAttribute('transform', 'rotate(' + aL + ' 68 108)');
-  $('aR').setAttribute('transform', 'rotate(' + aR + ' 132 108)');
 }
 
 function loop(t) {
@@ -935,11 +815,51 @@ function loop(t) {
   const level = Math.min(1, sm / .16);
   $('mt').firstElementChild.style.width = (level * 100) + '%';
 
-  $('an').style.transform =
-    game === 'dance'
-      ? 'rotate(' + (Math.sin(t / 140) * (4 + level * 22)) +
-        'deg) scale(' + (1 + level * .25) + ')'
-      : 'none';
+  // تعديل حركة رقص الحيوان بالكامل (حركة تمايل الجسد والدوران والقفز معا للأعلى والأسفل)
+  if (game === 'dance') {
+    const angle = Math.sin(t / 180) * (8 + level * 15);
+    const scale = 1 + Math.abs(Math.sin(t / 140)) * (0.15 + level * 0.15);
+    const translateY = Math.sin(t / 100) * 12;
+    $('an').style.transform = `translateY(${translateY}px) rotate(${angle}deg) scale(${scale})`;
+  } else if (game === 'move' && mv) {
+    // حركة تقليد الشخصية الكرتونية للطفل
+    const k = mv[2];
+    const p = (Math.sin(t / 260) + 1) / 2;
+
+    let tx = 0, ty = 0, sy = 1, rot = 0;
+    let aL = 10, aR = -10;
+
+    if (k === 'top') {
+      aL = 150 + 25 * p;
+      aR = -aL;
+    } else if (k === 'bot') {
+      sy = 1 - .3 * p;
+      aL = 40;
+      aR = -40;
+    } else if (k === 'left') {
+      tx = -50 * p;
+      rot = -8 * p;
+      aL = aR = 90;
+    } else if (k === 'right') {
+      tx = 50 * p;
+      rot = 8 * p;
+      aL = aR = -90;
+    } else {
+      ty = -55 * Math.abs(Math.sin(t / 260));
+      aL = 140;
+      aR = -140;
+    }
+
+    $('bb').setAttribute(
+      'transform',
+      'translate(' + tx + ' ' + ty + ') rotate(' + rot +
+      ' 100 245) translate(100 245) scale(1 ' + sy +
+      ') translate(-100 -245)'
+    );
+
+    $('aL').setAttribute('transform', 'rotate(' + aL + ' 68 108)');
+    $('aR').setAttribute('transform', 'rotate(' + aR + ' 132 108)');
+  }
 
   if (game === 'dance') {
     if (sm > (age === 3 ? .03 : .06)) prog += level;
@@ -968,7 +888,7 @@ function loop(t) {
       Math.min(100, hold / (age === 3 ? 8 : 6) * 100) + '%';
 
     if (hold >= (age === 3 ? 8 : 6)) ok();
-  } else {
+  } else if (game === 'color') {
     if (colorCount / (32 * 24) > .10) hold++;
     else hold = 0;
 
