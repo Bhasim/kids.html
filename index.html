@@ -44,6 +44,9 @@ button {
   background: var(--card);
   box-shadow: 0 4px 0 #0003;
   cursor: pointer;
+  position: relative;
+  z-index: 100;
+  -webkit-tap-highlight-color: transparent;
 }
 
 #home {
@@ -52,6 +55,8 @@ button {
   padding: max(18px, env(safe-area-inset-top)) 16px 24px;
   max-width: 600px;
   margin: auto;
+  position: relative;
+  z-index: 10;
 }
 
 h1 {
@@ -104,6 +109,8 @@ h1 {
   flex-direction: column;
   align-items: center;
   overflow: hidden;
+  position: relative;
+  z-index: 10;
 }
 
 #top {
@@ -114,6 +121,7 @@ h1 {
   justify-content: space-between;
   gap: 6px;
   padding: 8px 12px;
+  z-index: 150;
 }
 
 #top button {
@@ -218,36 +226,31 @@ h1 {
 
 #pg i { background: #ff8b4c; }
 
-/* نافذة الكاميرا المكبّرة */
 #v {
   position: fixed;
   left: 12px;
   bottom: calc(14px + env(safe-area-inset-bottom));
-
   width: min(58vw, 440px);
   height: min(52vw, 360px);
-
   min-width: 0;
   min-height: 0;
   max-width: 92vw;
   max-height: 48vh;
-
   object-fit: cover;
   object-position: center;
   background: #000;
-
   border: 6px solid #fff;
   border-radius: 28px;
   box-shadow: 0 8px 30px #0008;
-
   transform: scaleX(-1);
-  z-index: 20;
+  z-index: 5;
+  pointer-events: none;
 }
 
 #cheer {
   position: fixed;
   inset: 0;
-  z-index: 40;
+  z-index: 200;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -269,7 +272,7 @@ h1 {
 #timeup {
   position: fixed;
   inset: 0;
-  z-index: 50;
+  z-index: 300;
   background: #17142df2;
   display: flex;
   flex-direction: column;
@@ -337,11 +340,9 @@ h1 {
   <div id="timer">30:00</div>
   <div id="pr"></div>
   
-  <!-- منطقة عرض الحيوان أو اللون -->
   <div id="an">
     <svg id="animalSvg" viewBox="0 0 200 270">
       <g id="animalBodyGroup">
-        <!-- الأرجل -->
         <g stroke="#4a2c17" stroke-width="18" stroke-linecap="round">
           <line id="legL" x1="75" y1="160" x2="70" y2="230"/>
           <line id="legR" x1="125" y1="160" x2="130" y2="230"/>
@@ -349,25 +350,19 @@ h1 {
         <ellipse cx="65" cy="238" rx="16" ry="8" fill="#333"/>
         <ellipse cx="135" cy="238" rx="16" ry="8" fill="#333"/>
 
-        <!-- اليدين -->
         <g stroke="#d99b67" stroke-width="15" stroke-linecap="round">
           <line id="armL" x1="65" y1="105" x2="25" y2="140"/>
           <line id="armR" x1="135" y1="105" x2="175" y2="140"/>
         </g>
 
-        <!-- الجذع -->
         <rect id="torso" x="55" y="85" width="90" height="90" rx="25" fill="#f4a261"/>
 
-        <!-- الرأس والوجه -->
         <g id="headGroup">
           <circle cx="100" cy="55" r="40" fill="#f4a261"/>
-          <!-- الأذنان -->
           <circle cx="70" cy="30" r="14" fill="#d99b67"/>
           <circle cx="130" cy="30" r="14" fill="#d99b67"/>
-          <!-- العيون -->
           <circle cx="85" cy="50" r="5" fill="#222"/>
           <circle cx="115" cy="50" r="5" fill="#222"/>
-          <!-- الفم -->
           <path d="M90 68 Q100 78 110 68" stroke="#222" stroke-width="3" fill="none" stroke-linecap="round"/>
         </g>
       </g>
@@ -478,7 +473,6 @@ const MOV = [
   ['اقفز عاليًا', '↕️', 'all']
 ];
 
-const DAN_NAMES = ['الدب البنفسجي', 'الأسد الشجاع', 'الباندا اللطيف', 'القرد المشاكس', 'الكلب الوفي', 'الأرنب السريع', 'النمر القويك', 'الضفدع النشيط'];
 const OK = ['أحسنت', 'أحسنت يا بطل', 'برافو', 'ممتاز', 'رائع'];
 
 function loadVoices() {
@@ -493,11 +487,9 @@ if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !=
 
 function setAge(a) {
   age = a;
-  $('a3').className = a === 3 ? 'on' : '';
-  $('a5').className = a === 5 ? 'on' : '';
+  $('a3').className = a === 3 ? 'on' : '';$('a5').className = a === 5 ? 'on' : '';
 }
 
-// دالة نطق تضمن تفعيل الصوت باللغة العربية بدقة عالية في كل الألعاب
 function say(t, cancel = true) {
   try {
     if (!('speechSynthesis' in window)) return;
@@ -617,8 +609,7 @@ function endSession() {
     timerInterval = null;
   }
 
-  $('timer').textContent = '00:00';
-  $('finalStars').textContent = '⭐ عدد النجوم التي جمعتها: ' + stars;
+  $('timer').textContent = '00:00';$('finalStars').textContent = '⭐ عدد النجوم التي جمعتها: ' + stars;
   $('timeup').hidden = false;
 
   say('انتهى وقت اللعب. أحسنت يا بطل!', true);
@@ -754,35 +745,30 @@ function next() {
   if (!run) return;
 
   hold = 0;
-  $('mt').firstElementChild.style.width = '0%';
-  $('pg').firstElementChild.style.width = '0%';
+  $('mt').firstElementChild.style.width = '0\%';$('pg').firstElementChild.style.width = '0%';
 
-  $('bx').hidden = game !== 'move';
-  $('an').hidden = game === 'move';
+  $('bx').hidden = game !== 'move';$('an').hidden = game === 'move';
 
   if (game === 'dance') {
     $('pr').textContent = 'ارقص مع الصديق اللطيف! 💃';
+    say('ارقص مع الصديق اللطيف', true);
   } else if (game === 'move') {
     const choices = age === 3 ? [0, 2, 3, 4] : [0, 1, 2, 3, 4];
     mv = MOV[choices[Math.random() * choices.length | 0]];
-    $('pr').textContent = mv[0];
-    $('ar').textContent = mv[1];
+    $('pr').textContent = mv[0];$('ar').textContent = mv[1];
     say(mv[0], true);
   } else {
     col = COL[Math.random() * COL.length | 0];
     $('pr').textContent = 'هات شيئًا ' + col[0] + ' وأرِه للكاميرا!';
     $('an').className = 'cbox';
-    $('an').style.background = col[3];
-    // إخفاء رسمة الحيوان مؤقتاً في لعبة الألوان وإظهار الأيقونة الملونة
-    $('animalSvg').hidden = true;
+    $('an').style.background = col[3];$('animalSvg').hidden = true;
     $('an').textContent = col[1];
     say('هات شيئًا باللون ' + col[0] + ' وأرِه للكاميرا', true);
   }
 
   if (game !== 'color') {
     $('an').classList.remove('cbox');
-    $('an').style.background = '';
-    $('animalSvg').hidden = false;
+    $('an').style.background = '';$('animalSvg').hidden = false;
   }
 }
 
@@ -854,25 +840,18 @@ function loop(t) {
   }
 
   prev = new Uint8ClampedArray(d);
-  sm = sm * .6 + (changed / n) .4;
+  sm = sm * .6 + (changed / n) * .4;
 
   const level = Math.min(1, sm / .16);
   $('mt').firstElementChild.style.width = (level * 100) + '%';
 
-  // حركة أجزاء شخصية الحيوان بالكامل بشكل مستقل ومنفصل (الرأس، اليدين، القدمين، والجسم)
   if (game === 'dance') {
-    const p = (Math.sin(t / 150) + 1) / 2;
     const bodyTranslateY = Math.sin(t / 100) * 10;
     
-    // تحريك اليدين بشكل متبادل لأعلى وأسفل
-    $('armL').setAttribute('y2', 140 + Math.sin(t / 120) * 25);
-    $('armR').setAttribute('y2', 140 - Math.sin(t / 120) * 25);
+    $('armL').setAttribute('y2', 140 + Math.sin(t / 120) * 25);$('armR').setAttribute('y2', 140 - Math.sin(t / 120) * 25);
 
-    // تحريك القدمين
-    $('legL').setAttribute('x2', 70 + Math.sin(t / 150) * 10);
-    $('legR').setAttribute('x2', 130 - Math.sin(t / 150) * 10);
+    $('legL').setAttribute('x2', 70 + Math.sin(t / 150) * 10);$('legR').setAttribute('x2', 130 - Math.sin(t / 150) * 10);
 
-    // تمايل الرأس والجذع
     $('headGroup').setAttribute('transform', `translate(0, ${Math.sin(t / 100) * 5}) rotate(${Math.sin(t / 180) * 10}, 100, 55)`);
     $('torso').setAttribute('transform', `translate(0, ${bodyTranslateY})`);
   } else if (game === 'move' && mv) {
@@ -911,46 +890,3 @@ function loop(t) {
     );
 
     $('aL').setAttribute('transform', 'rotate(' + aL + ' 68 108)');
-    $('aR').setAttribute('transform', 'rotate(' + aR + ' 132 108)');
-  }
-
-  if (game === 'dance') {
-    if (sm > (age === 3 ? .03 : .06)) prog += level;
-
-    const need = age === 3 ? 20 : 30;
-    $('pg').firstElementChild.style.width =
-      Math.min(100, prog / need * 100) + '%';
-
-    if (prog >= need) {
-      prog = 0;
-      ok();
-    }
-  } else if (game === 'move') {
-    const k = mv[2];
-    const fraction =
-      k === 'top' ? top / n :
-      k === 'bot' ? bottom / n :
-      k === 'left' ? left / n :
-      k === 'right' ? right / n :
-      changed / n;
-
-    if (fraction > (age === 3 ? .08 : .12)) hold++;
-    else hold = Math.max(0, hold - 1);
-
-    $('pg').firstElementChild.style.width =
-      Math.min(100, hold / (age === 3 ? 8 : 6) * 100) + '%';
-
-    if (hold >= (age === 3 ? 8 : 6)) ok();
-  } else if (game === 'color') {
-    if (colorCount / (32 * 24) > .10) hold++;
-    else hold = 0;
-
-    $('pg').firstElementChild.style.width =
-      Math.min(100, hold / 8 * 100) + '%';
-
-    if (hold >= 8) ok();
-  }
-}
-</script>
-</body>
-</html>
