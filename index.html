@@ -151,9 +151,14 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: min(39vh, 65vw);
   line-height: 1.1;
-  transform-origin: center bottom;
+}
+
+#an svg {
+  height: min(45vh, 65vw);
+  width: auto;
+  max-width: 85vw;
+  overflow: visible;
 }
 
 #an.cbox {
@@ -331,7 +336,43 @@ h1 {
 
   <div id="timer">30:00</div>
   <div id="pr"></div>
-  <div id="an">🐻</div>
+  
+  <!-- منطقة عرض الحيوان أو اللون -->
+  <div id="an">
+    <svg id="animalSvg" viewBox="0 0 200 270">
+      <g id="animalBodyGroup">
+        <!-- الأرجل -->
+        <g stroke="#4a2c17" stroke-width="18" stroke-linecap="round">
+          <line id="legL" x1="75" y1="160" x2="70" y2="230"/>
+          <line id="legR" x1="125" y1="160" x2="130" y2="230"/>
+        </g>
+        <ellipse cx="65" cy="238" rx="16" ry="8" fill="#333"/>
+        <ellipse cx="135" cy="238" rx="16" ry="8" fill="#333"/>
+
+        <!-- اليدين -->
+        <g stroke="#d99b67" stroke-width="15" stroke-linecap="round">
+          <line id="armL" x1="65" y1="105" x2="25" y2="140"/>
+          <line id="armR" x1="135" y1="105" x2="175" y2="140"/>
+        </g>
+
+        <!-- الجذع -->
+        <rect id="torso" x="55" y="85" width="90" height="90" rx="25" fill="#f4a261"/>
+
+        <!-- الرأس والوجه -->
+        <g id="headGroup">
+          <circle cx="100" cy="55" r="40" fill="#f4a261"/>
+          <!-- الأذنان -->
+          <circle cx="70" cy="30" r="14" fill="#d99b67"/>
+          <circle cx="130" cy="30" r="14" fill="#d99b67"/>
+          <!-- العيون -->
+          <circle cx="85" cy="50" r="5" fill="#222"/>
+          <circle cx="115" cy="50" r="5" fill="#222"/>
+          <!-- الفم -->
+          <path d="M90 68 Q100 78 110 68" stroke="#222" stroke-width="3" fill="none" stroke-linecap="round"/>
+        </g>
+      </g>
+    </svg>
+  </div>
 
   <div id="bx" hidden>
     <div id="ar">⬆️</div>
@@ -437,10 +478,9 @@ const MOV = [
   ['اقفز عاليًا', '↕️', 'all']
 ];
 
-const DAN = ['🐻', '🦁', '🐼', '🐵', '🐶', '🦄', '🐯', '🐸'];
+const DAN_NAMES = ['الدب البنفسجي', 'الأسد الشجاع', 'الباندا اللطيف', 'القرد المشاكس', 'الكلب الوفي', 'الأرنب السريع', 'النمر القويك', 'الضفدع النشيط'];
 const OK = ['أحسنت', 'أحسنت يا بطل', 'برافو', 'ممتاز', 'رائع'];
 
-// تحضير الأصوات المتاحة في الجهاز فوراً
 function loadVoices() {
   if (typeof speechSynthesis !== 'undefined') {
     voicesList = speechSynthesis.getVoices();
@@ -457,7 +497,7 @@ function setAge(a) {
   $('a5').className = a === 5 ? 'on' : '';
 }
 
-// دالة نطق معدلة ومضمونة للغة العربية
+// دالة نطق تضمن تفعيل الصوت باللغة العربية بدقة عالية في كل الألعاب
 function say(t, cancel = true) {
   try {
     if (!('speechSynthesis' in window)) return;
@@ -475,8 +515,8 @@ function say(t, cancel = true) {
       u.voice = arVoices.find(x => /female|woman|girl|laila|layla|mariam|maryam|zeina|zaina|sara|salma|hoda|هدى|ليلى|مريم/i.test(x.name)) || arVoices[0];
     }
 
-    u.pitch = 1.2;
-    u.rate = 0.9;
+    u.pitch = 1.25;
+    u.rate = 0.92;
     u.volume = 1;
     speechSynthesis.speak(u);
   } catch (e) {}
@@ -666,15 +706,8 @@ async function start(g) {
   updateTimer();
   timerInterval = setInterval(updateTimer, 250);
 
-  // تفعيل نطق النص الترحيبي عند بداية اللعبة فوراً لمزامنة الصوت
-  say(
-    g === 'dance'
-      ? 'مرحبًا يا أبطال! هيا نرقص'
-      : g === 'move'
-      ? 'مرحبًا يا أبطال! هيا نقلّد الحركة'
-      : 'مرحبًا يا أبطال! هيا نبحث عن الألوان',
-    true
-  );
+  const welcomeText = g === 'dance' ? 'مرحبًا يا بطل! هيا نرقص مع الحيوانات' : g === 'move' ? 'مرحبًا يا بطل! هيا نقلّد الحركة' : 'مرحبًا يا بطل! هيا نبحث عن الألوان';
+  say(welcomeText, true);
 
   next();
 
@@ -724,14 +757,11 @@ function next() {
   $('mt').firstElementChild.style.width = '0%';
   $('pg').firstElementChild.style.width = '0%';
 
-  $('an').className = '';
-  $('an').style.transform = '';
   $('bx').hidden = game !== 'move';
   $('an').hidden = game === 'move';
 
   if (game === 'dance') {
-    $('pr').textContent = 'ارقص مع الحيوان! 💃';
-    $('an').textContent = DAN[Math.random() * DAN.length | 0];
+    $('pr').textContent = 'ارقص مع الصديق اللطيف! 💃';
   } else if (game === 'move') {
     const choices = age === 3 ? [0, 2, 3, 4] : [0, 1, 2, 3, 4];
     mv = MOV[choices[Math.random() * choices.length | 0]];
@@ -743,8 +773,16 @@ function next() {
     $('pr').textContent = 'هات شيئًا ' + col[0] + ' وأرِه للكاميرا!';
     $('an').className = 'cbox';
     $('an').style.background = col[3];
+    // إخفاء رسمة الحيوان مؤقتاً في لعبة الألوان وإظهار الأيقونة الملونة
+    $('animalSvg').hidden = true;
     $('an').textContent = col[1];
-    say('هات شيئًا ' + col[0] + ' وأرِه للكاميرا', true);
+    say('هات شيئًا باللون ' + col[0] + ' وأرِه للكاميرا', true);
+  }
+
+  if (game !== 'color') {
+    $('an').classList.remove('cbox');
+    $('an').style.background = '';
+    $('animalSvg').hidden = false;
   }
 }
 
@@ -816,16 +854,27 @@ function loop(t) {
   }
 
   prev = new Uint8ClampedArray(d);
-  sm = sm * .6 + (changed / n) * .4;
+  sm = sm * .6 + (changed / n) .4;
 
   const level = Math.min(1, sm / .16);
   $('mt').firstElementChild.style.width = (level * 100) + '%';
 
+  // حركة أجزاء شخصية الحيوان بالكامل بشكل مستقل ومنفصل (الرأس، اليدين، القدمين، والجسم)
   if (game === 'dance') {
-    const angle = Math.sin(t / 180) * (8 + level * 15);
-    const scale = 1 + Math.abs(Math.sin(t / 140)) * (0.15 + level * 0.15);
-    const translateY = Math.sin(t / 100) * 12;
-    $('an').style.transform = `translateY(${translateY}px) rotate(${angle}deg) scale(${scale})`;
+    const p = (Math.sin(t / 150) + 1) / 2;
+    const bodyTranslateY = Math.sin(t / 100) * 10;
+    
+    // تحريك اليدين بشكل متبادل لأعلى وأسفل
+    $('armL').setAttribute('y2', 140 + Math.sin(t / 120) * 25);
+    $('armR').setAttribute('y2', 140 - Math.sin(t / 120) * 25);
+
+    // تحريك القدمين
+    $('legL').setAttribute('x2', 70 + Math.sin(t / 150) * 10);
+    $('legR').setAttribute('x2', 130 - Math.sin(t / 150) * 10);
+
+    // تمايل الرأس والجذع
+    $('headGroup').setAttribute('transform', `translate(0, ${Math.sin(t / 100) * 5}) rotate(${Math.sin(t / 180) * 10}, 100, 55)`);
+    $('torso').setAttribute('transform', `translate(0, ${bodyTranslateY})`);
   } else if (game === 'move' && mv) {
     const k = mv[2];
     const p = (Math.sin(t / 260) + 1) / 2;
