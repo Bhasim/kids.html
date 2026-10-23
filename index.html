@@ -11,18 +11,18 @@
 html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;overflow:hidden;text-align:center}
 [hidden]{display:none!important}
-#home{padding:20px;max-width:650px;margin:0 auto;display:flex;flex-direction:column;justify-content:center;height:100%;box-sizing:border-box}
+#home{padding:20px;max-width:650px;margin:0 auto;display:flex;flex-direction:column;justify-content:center;height:100%;box-sizing:border-box;position:relative;z-index:10}
 h1{font-size:36px;margin:10px 0}
 .row{display:flex;gap:12px;justify-content:center;margin:12px 0}
-button{font:inherit;border:0;border-radius:24px;padding:16px 22px;font-size:22px;background:var(--card);color:var(--fg);box-shadow:0 4px 0 rgba(0,0,0,.15);cursor:pointer;transition:transform .1s;position:relative;z-index:150}
+button{font:inherit;border:0;border-radius:24px;padding:16px 22px;font-size:22px;background:var(--card);color:var(--fg);box-shadow:0 4px 0 rgba(0,0,0,.15);cursor:pointer;transition:transform .1s;position:relative;z-index:999;-webkit-tap-highlight-color:transparent;}
 button:active{transform:scale(0.96)}
 .age button{flex:1}
 .age button.on{background:var(--b);color:#fff}
 .g{display:block;width:100%;margin:12px 0;font-size:26px;padding:22px;color:#fff;border-radius:28px}
 .g small{display:block;font-size:16px;opacity:.9;margin-top:6px}
 #err{color:#d93025;min-height:24px;font-size:16px;font-weight:bold}
-#game{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding-bottom:10px;box-sizing:border-box}
-#top{display:flex;width:100%;justify-content:space-between;align-items:center;padding:10px 16px;box-sizing:border-box;z-index:150}
+#game{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding-bottom:10px;box-sizing:border-box;position:relative;z-index:10}
+#top{display:flex;width:100%;justify-content:space-between;align-items:center;padding:10px 16px;box-sizing:border-box;z-index:999}
 #top button{padding:10px 18px;font-size:20px}
 #st{font-size:32px;font-weight:800;color:#ffb300;text-shadow:0 2px 0 #0002}
 #pr{font-size:clamp(26px, 6vw, 48px);font-weight:800;min-height:1.2em;padding:0 12px;z-index:5}
@@ -39,9 +39,10 @@ button:active{transform:scale(0.96)}
 #pg i{background:var(--a)}
 .lb{font-size:15px;opacity:.85;font-weight:bold;margin-top:2px}
 
-#v{position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));width:min(320px, 42vw);height:min(240px, 32vw);object-fit:cover;border-radius:24px;border:5px solid #fff;box-shadow:0 10px 25px rgba(0,0,0,0.3);transform:scaleX(-1);background:#000;z-index:100;pointer-events:none}
+/* منع الفيديو من حجب اللمس نهائياً عبر pointer-events: none */
+#v{position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));width:min(320px, 42vw);height:min(240px, 32vw);object-fit:cover;border-radius:24px;border:5px solid #fff;box-shadow:0 10px 25px rgba(0,0,0,0.3);transform:scaleX(-1);background:#000;z-index:5;pointer-events:none}
 
-#cheer{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-size:14vw;font-weight:900;color:#ffb300;text-shadow:0 6px 0 #0004;pointer-events:none;opacity:0;transform:scale(.4);transition:.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);z-index:200}
+#cheer{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-size:14vw;font-weight:900;color:#ffb300;text-shadow:0 6px 0 #0004;pointer-events:none;opacity:0;transform:scale(.4);transition:.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);z-index:9999}
 #cheer.on{opacity:1;transform:scale(1)}
 </style>
 </head>
@@ -171,4 +172,174 @@ function banner(t){
 function ok(){
   stars++;
   $('st').textContent='⭐ '+stars+' / '+GOAL;
-  [523, 659, 783, 1046].forEach((f,
+  [523, 659, 783, 1046].forEach((f,i)=>setTimeout(()=>beep(f, 0.18),i*100));
+  banner(['أحسنت! 🌟','برافو! 🎉','رائع! 👏'][stars%3]);
+  say(OK[Math.floor(Math.random()*OK.length)]);
+  if(stars>=GOAL)finish();else next();
+}
+
+function fail(){
+  mvT=Date.now();
+  say('استمر في الحركة يا بطل');
+}
+
+function finish(){
+  run=false;
+  stopMusic();
+  $('pr').textContent='🏆 أتممت التحدي الطويل بنجاح!';
+  say('أحسنت يا بطل! لقد أكملت التحدي الطويل بنجاح');
+  endT=setTimeout(home,7000);
+}
+
+async function cam(){
+  if(stream)stream.getTracks().forEach(t=>t.stop());
+  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing,width:{ideal:640},height:{ideal:480}},audio:false});
+  v.srcObject=stream;v.hidden=false;await v.play();prev=null;
+}
+
+async function start(g){
+  game=g;clearTimeout(endT);
+  try{
+    if(window.speechSynthesis){const u=new SpeechSynthesisUtterance('');speechSynthesis.speak(u)}
+    ac=ac||new(window.AudioContext||window.webkitAudioContext)();
+    if(ac.state==='suspended')await ac.resume();
+    await cam();
+  }catch(e){
+    $('err').textContent='تعذر فتح الكاميرا، يُرجى التأكد من إعطاء الإذن للمتصفح.';
+    return;
+  }
+  $('home').hidden=true;$('game').hidden=false;stars=0;prog=0;$('st').textContent='⭐ 0 / '+GOAL;run=true;
+  say(g=='dance'?'مرحبًا يا بطل! هيا نرقص لفترة طويلة مع الموسيقى':g=='move'?'مرحبًا بك! هيا نقلّد الحركات المتتالية':'مرحبًا! هيا نبحث عن الألوان لفترة طويلة بدون توقف',true);
+  next();
+  requestAnimationFrame(loop);
+  if(!an){an=true;requestAnimationFrame(animate)}
+}
+
+function home(){
+  run=false;stopMusic();clearTimeout(endT);
+  try{speechSynthesis.cancel()}catch(e){}
+  $('game').hidden=true;$('home').hidden=false;v.hidden=true;
+  if(stream)stream.getTracks().forEach(t=>t.stop());
+}
+
+async function flip(){
+  facing=facing=='user'?'environment':'user';
+  try{await cam()}catch(e){}
+}
+
+function next(){
+  hold=0;mvT=Date.now();$('an').className='';$('an').style.background='';$('bx').hidden=game!='move';$('an').hidden=game=='move';
+  if(game=='dance'){
+    $('pr').textContent='ارقص باستمرار! 💃';
+    $('an').textContent=DAN[stars%DAN.length];
+    startMusic();
+  }else if(game=='move'){
+    stopMusic();
+    const p=age==3?[0,2,3,4]:[0,1,2,3,4];
+    mv=MOV[p[Math.floor(Math.random()*p.length)]];
+    $('pr').textContent=mv[0];$('ar').textContent=mv[1];
+    say(mv[0]);
+  }else{
+    stopMusic();
+    col=COL[Math.floor(Math.random()*COL.length)];
+    $('pr').textContent='هات شيئًا '+col[0]+' وأرِه للكاميرا!';
+    $('an').className='cbox';
+    $('an').style.background=col[3];
+    $('an').textContent=col[1];
+    say('هات شيئًا '+col[0]+' وأرِه للكاميرا');
+  }
+}
+
+function rgbToHsl(r,g,b){
+  r/=255; g/=255; b/=255;
+  const max=Math.max(r,g,b), min=Math.min(r,g,b);
+  let h=0, s=0, l=(max+min)/2;
+  if(max!==min){
+    const d=max-min;
+    s=l>0.5?d/(2-max-min):d/(max+min);
+    switch(max){
+      case r: h=(g-b)/d+(g<b?6:0); break;
+      case g: h=(b-r)/d+2; break;
+      case b: h=(r-g)/d+4; break;
+    }
+    h*=60;
+  }
+  return [h, s, l];
+}
+
+function matchColor(r,g,b){
+  const [h,s,l]=rgbToHsl(r,g,b);
+  return col[2](h,s,l);
+}
+
+function animate(t){
+  if($('game').hidden){an=false;return}
+  requestAnimationFrame(animate);
+  if(game!='move'||!mv)return;
+  const k=mv[2],p=(Math.sin(t/240)+1)/2;
+  let tx=0,ty=0,sy=1,rot=0,aL=10,aR=-10;
+  if(k=='top'){aL=150+30*p;aR=-aL}
+  else if(k=='bot'){sy=1-.35*p;aL=45;aR=-45}
+  else if(k=='left'){tx=-60*p;rot=-10*p;aL=aR=95}
+  else if(k=='right'){tx=60*p;rot=10*p;aL=aR=-95}
+  else{ty=-65*Math.abs(Math.sin(t/220));aL=150;aR=-150}
+  
+  $('bb').setAttribute('transform','translate('+tx+' '+ty+') rotate('+rot+' 100 245) translate(100 245) scale(1 '+sy+') translate(-100 -245)');
+  $('aL').setAttribute('transform','rotate('+aL+' 68 108)');
+  $('aR').setAttribute('transform','rotate('+aR+' 132 108)');
+}
+
+function loop(t){
+  if(!run)return;
+  requestAnimationFrame(loop);
+  if(t-last<80||v.readyState<2)return;
+  last=t;
+
+  cx.save();cx.translate(64,0);cx.scale(-1,1);
+  cx.drawImage(v,0,0,64,48);cx.restore();
+  
+  const d=cx.getImageData(0,0,64,48).data, n=3072;
+  let a=0,tp=0,bt=0,l=0,r=0,cc=0;
+
+  for(let i=0;i<n;i++){
+    const o=i*4, x=i%64, y=Math.floor(i/64);
+    if(prev && Math.abs(d[o]+d[o+1]+d[o+2]-prev[o]-prev[o+1]-prev[o+2])>80){
+      a++;
+      if(y<18)tp++;
+      if(y>30)bt++;
+      if(x<32)l++; else r++;
+    }
+    if(game=='color'&&x>12&&x<52&&y>8&&y<40&&matchColor(d[o],d[o+1],d[o+2])){
+      cc++;
+    }
+  }
+  
+  prev=d;
+  sm=sm*.65+(a/n)*.35;
+  const lv=Math.min(1,sm/.18);
+  
+  $('mt').firstChild.style.width=(lv*100)+'%';
+  $('an').style.transform=game=='dance'?'rotate('+(Math.sin(t/120)*(6+lv*28))+'deg) scale('+(1+lv*.35)+')':'none';
+
+  if(game=='dance'){
+    if(sm>(age==3?.025:.05))prog+=lv;
+    const need=age==3?25:35;
+    $('pg').firstChild.style.width=Math.min(100,prog/need*100)+'%';
+    if(prog>=need){prog=0;ok()}
+    else if(Date.now()-mvT>30000){mvT=Date.now();say('استمر في الرقص، أنت رائع')}
+  }else if(game=='move'){
+    const k=mv[2], f=k=='top'?tp/1152:k=='bot'?bt/1152:k=='left'?l/1536:k=='right'?r/1536:a/n;
+    if(f>(age==3?.07:.11))hold++; else hold=Math.max(0,hold-1);
+    $('pg').firstChild.style.width=Math.min(100,hold/(age==3?10:8)*100)+'%';
+    if(hold>=(age==3?10:8))ok();
+    else if(Date.now()-mvT>30000)fail();
+  }else{
+    if(cc/1280>.06)hold++; else hold=Math.max(0,hold-1);
+    $('pg').firstChild.style.width=Math.min(100,hold/10*100)+'%';
+    if(hold>=10)ok();
+    else if(Date.now()-mvT>40000)fail();
+  }
+}
+</script>
+</body>
+</html>
