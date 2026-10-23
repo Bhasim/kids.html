@@ -14,7 +14,7 @@ body{background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"S
 #home{padding:20px;max-width:650px;margin:0 auto;display:flex;flex-direction:column;justify-content:center;height:100%;box-sizing:border-box}
 h1{font-size:36px;margin:10px 0}
 .row{display:flex;gap:12px;justify-content:center;margin:12px 0}
-button{font:inherit;border:0;border-radius:24px;padding:16px 22px;font-size:22px;background:var(--card);color:var(--fg);box-shadow:0 4px 0 rgba(0,0,0,.15);cursor:pointer;transition:transform .1s}
+button{font:inherit;border:0;border-radius:24px;padding:16px 22px;font-size:22px;background:var(--card);color:var(--fg);box-shadow:0 4px 0 rgba(0,0,0,.15);cursor:pointer;transition:transform .1s;position:relative;z-index:150}
 button:active{transform:scale(0.96)}
 .age button{flex:1}
 .age button.on{background:var(--b);color:#fff}
@@ -22,7 +22,7 @@ button:active{transform:scale(0.96)}
 .g small{display:block;font-size:16px;opacity:.9;margin-top:6px}
 #err{color:#d93025;min-height:24px;font-size:16px;font-weight:bold}
 #game{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding-bottom:10px;box-sizing:border-box}
-#top{display:flex;width:100%;justify-content:space-between;align-items:center;padding:10px 16px;box-sizing:border-box;z-index:10}
+#top{display:flex;width:100%;justify-content:space-between;align-items:center;padding:10px 16px;box-sizing:border-box;z-index:150}
 #top button{padding:10px 18px;font-size:20px}
 #st{font-size:32px;font-weight:800;color:#ffb300;text-shadow:0 2px 0 #0002}
 #pr{font-size:clamp(26px, 6vw, 48px);font-weight:800;min-height:1.2em;padding:0 12px;z-index:5}
@@ -39,7 +39,7 @@ button:active{transform:scale(0.96)}
 #pg i{background:var(--a)}
 .lb{font-size:15px;opacity:.85;font-weight:bold;margin-top:2px}
 
-#v{position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));width:min(320px, 42vw);height:min(240px, 32vw);object-fit:cover;border-radius:24px;border:5px solid #fff;box-shadow:0 10px 25px rgba(0,0,0,0.3);transform:scaleX(-1);background:#000;z-index:100}
+#v{position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));width:min(320px, 42vw);height:min(240px, 32vw);object-fit:cover;border-radius:24px;border:5px solid #fff;box-shadow:0 10px 25px rgba(0,0,0,0.3);transform:scaleX(-1);background:#000;z-index:100;pointer-events:none}
 
 #cheer{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-size:14vw;font-weight:900;color:#ffb300;text-shadow:0 6px 0 #0004;pointer-events:none;opacity:0;transform:scale(.4);transition:.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);z-index:200}
 #cheer.on{opacity:1;transform:scale(1)}
@@ -47,13 +47,12 @@ button:active{transform:scale(0.96)}
 </head>
 <body>
 <section id="home">
-  <h1>🐾 العب وتحرّك (لفترة طويلة)</h1>
+  <h1>🐾 العب وتحرّك (بدون توقف)</h1>
   <div class="row age"><button id="a3" class="on" onclick="setAge(3)">👶 عمر ٣ سنوات</button><button id="a5" onclick="setAge(5)">🧒 عمر ٥ سنوات</button></div>
   <button class="g" style="background:var(--a)" onclick="start('dance')">💃 ارقص مع الحيوانات (مستمر)<small>لعب طويل بدون توقف مع موسيقى حماسية</small></button>
   <button class="g" style="background:var(--b)" onclick="start('move')">🧒 قلّد الحركة (مستمر)<small>حركات متنوعة ومتتالية بدون انقطاع</small></button>
   <button class="g" style="background:var(--c)" onclick="start('color')">🎨 ابحث عن اللون (مستمر)<small>تحديات الألوان لفترة طويلة</small></button>
   <div id="err"></div>
-  <p class="lb">تم زيادة عدد النجوم والوقت لتعمل اللعبة لفترة طويلة جداً بدون توقف.</p>
 </section>
 
 <section id="game" hidden>
@@ -87,7 +86,6 @@ button:active{transform:scale(0.96)}
 
 <script>
 const $=i=>document.getElementById(i);
-// زيادة الهدف إلى 20 نجمة لتدوم اللعبة لفترة طويلة جداً
 const GOAL=20;
 let age=3,game='',stars=0,stream=null,facing='user',ac=null,run=false,last=0,prev=null,sm=0,prog=0,hold=0,mv=null,col=null,mvT=0,an=false,endT=0;
 let musicTimer=null,musicStep=0;
@@ -173,105 +171,4 @@ function banner(t){
 function ok(){
   stars++;
   $('st').textContent='⭐ '+stars+' / '+GOAL;
-  [523, 659, 783, 1046].forEach((f,i)=>setTimeout(()=>beep(f, 0.18),i*100));
-  banner(['أحسنت! 🌟','برافو! 🎉','رائع! 👏'][stars%3]);
-  say(OK[Math.floor(Math.random()*OK.length)]);
-  if(stars>=GOAL)finish();else next();
-}
-
-function fail(){
-  // تم توسيع المهلة الزمنية كثيراً، وإذا حدث تخطي يتم التوجيه بدون إيقاف اللعبة قسرياً لمنع الإزعاج
-  mvT=Date.now();
-  say('استمر في الحركة يا بطل');
-}
-
-function finish(){
-  run=false;
-  stopMusic();
-  $('pr').textContent='🏆 أتممت التحدي الطويل بنجاح!';
-  say('أحسنت يا بطل! لقد أكملت التحدي الطويل بنجاح');
-  endT=setTimeout(home,7000);
-}
-
-async function cam(){
-  if(stream)stream.getTracks().forEach(t=>t.stop());
-  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing,width:{ideal:640},height:{ideal:480}},audio:false});
-  v.srcObject=stream;v.hidden=false;await v.play();prev=null;
-}
-
-async function start(g){
-  game=g;clearTimeout(endT);
-  try{
-    if(window.speechSynthesis){const u=new SpeechSynthesisUtterance('');speechSynthesis.speak(u)}
-    ac=ac||new(window.AudioContext||window.webkitAudioContext)();
-    if(ac.state==='suspended')await ac.resume();
-    await cam();
-  }catch(e){
-    $('err').textContent='تعذر فتح الكاميرا، يُرجى التأكد من إعطاء الإذن للمتصفح.';
-    return;
-  }
-  $('home').hidden=true;$('game').hidden=false;stars=0;prog=0;$('st').textContent='⭐ 0 / '+GOAL;run=true;
-  say(g=='dance'?'مرحبًا يا بطل! هيا نرقص لفترة طويلة مع الموسيقى':g=='move'?'مرحبًا بك! هيا نقلّد الحركات المتتالية':'مرحبًا! هيا نبحث عن الألوان لفترة طويلة بدون توقف',true);
-  next();
-  requestAnimationFrame(loop);
-  if(!an){an=true;requestAnimationFrame(animate)}
-}
-
-function home(){
-  run=false;stopMusic();clearTimeout(endT);
-  try{speechSynthesis.cancel()}catch(e){}
-  $('game').hidden=true;$('home').hidden=false;v.hidden=true;
-  if(stream)stream.getTracks().forEach(t=>t.stop());
-}
-
-async function flip(){
-  facing=facing=='user'?'environment':'user';
-  try{await cam()}catch(e){}
-}
-
-function next(){
-  hold=0;mvT=Date.now();$('an').className='';$('an').style.background='';$('bx').hidden=game!='move';$('an').hidden=game=='move';
-  if(game=='dance'){
-    $('pr').textContent='ارقص باستمرار! 💃';
-    $('an').textContent=DAN[stars%DAN.length];
-    startMusic();
-  }else if(game=='move'){
-    stopMusic();
-    const p=age==3?[0,2,3,4]:[0,1,2,3,4];
-    mv=MOV[p[Math.floor(Math.random()*p.length)]];
-    $('pr').textContent=mv[0];$('ar').textContent=mv[1];
-    say(mv[0]);
-  }else{
-    stopMusic();
-    col=COL[Math.floor(Math.random()*COL.length)];
-    $('pr').textContent='هات شيئًا '+col[0]+' وأرِه للكاميرا!';
-    $('an').className='cbox';
-    $('an').style.background=col[3];$('an').textContent=col[1];
-    say('هات شيئًا '+col[0]+' وأرِه للكاميرا');
-  }
-}
-
-function rgbToHsl(r,g,b){
-  r/=255; g/=255; b/=255;
-  const max=Math.max(r,g,b), min=Math.min(r,g,b);
-  let h=0, s=0, l=(max+min)/2;
-  if(max!==min){
-    const d=max-min;
-    s=l>0.5?d/(2-max-min):d/(max+min);
-    switch(max){
-      case r: h=(g-b)/d+(g<b?6:0); break;
-      case g: h=(b-r)/d+2; break;
-      case b: h=(r-g)/d+4; break;
-    }
-    h*=60;
-  }
-  return [h, s, l];
-}
-
-function matchColor(r,g,b){
-  const [h,s,l]=rgbToHsl(r,g,b);
-  return col[2](h,s,l);
-}
-
-function animate(t){
-  if($('game').hidden){an=false
+  [523, 659, 783, 1046].forEach((f,
