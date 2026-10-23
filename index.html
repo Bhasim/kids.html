@@ -1,892 +1,389 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>العب وتحرّك</title>
-
+<title>العب وتحرّك - لعبة الأطفال</title>
 <style>
-:root {
-  --bg: #1d1a3a;
-  --fg: #fff4d6;
-  --card: #2c2860;
-  --bar: #3a3480;
-  --orange: #ffb52e;
-  --green: #39bb5b;
-  box-sizing: border-box;
-}
-
-* { box-sizing: border-box; }
-
-html, body {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-}
-
-body {
-  background: var(--bg);
-  color: var(--fg);
-  font-family: system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
-  text-align: center;
-  overflow: hidden;
-}
-
-[hidden] { display: none !important; }
-
-button {
-  font: inherit;
-  border: 0;
-  border-radius: 22px;
-  padding: 12px 16px;
-  font-size: 19px;
-  color: white;
-  background: var(--card);
-  box-shadow: 0 4px 0 #0003;
-  cursor: pointer;
-  position: relative;
-  z-index: 100;
-  -webkit-tap-highlight-color: transparent;
-}
-
-#home {
-  height: 100%;
-  overflow-y: auto;
-  padding: max(18px, env(safe-area-inset-top)) 16px 24px;
-  max-width: 600px;
-  margin: auto;
-  position: relative;
-  z-index: 10;
-}
-
-h1 {
-  font-size: 30px;
-  margin: 8px 0 20px;
-}
-
-.row {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  margin: 12px 0;
-}
-
-.age button { flex: 1; }
-.age button.on { background: #2f9fe8; }
-
-.g {
-  display: block;
-  width: 100%;
-  margin: 12px 0;
-  padding: 18px 12px;
-  font-size: 23px;
-}
-
-.g small {
-  display: block;
-  font-size: 14px;
-  margin-top: 5px;
-}
-
-#err {
-  color: #ff8585;
-  min-height: 24px;
-  font-size: 14px;
-}
-
-.lb {
-  font-size: 15px;
-  margin: 5px 0;
-}
-
-#game {
-  height: 100%;
-  height: 100dvh;
-  width: 100%;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  overflow: hidden;
-  position: relative;
-  z-index: 10;
-}
-
-#top {
-  flex-shrink: 0;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  padding: 8px 12px;
-  z-index: 150;
-}
-
-#top button {
-  font-size: 16px;
-  padding: 9px 12px;
-}
-
-#st {
-  font-size: 21px;
-  font-weight: bold;
-}
-
-#timer {
-  flex-shrink: 0;
-  color: var(--orange);
-  font-size: clamp(21px, 5vw, 32px);
-  font-weight: 800;
-  direction: ltr;
-  margin: 2px 0;
-}
-
-#pr {
-  flex-shrink: 0;
-  font-size: clamp(22px, 5vw, 38px);
-  font-weight: 800;
-  min-height: 1.4em;
-  padding: 0 10px;
-  margin: 4px 0;
-}
-
-#an {
-  flex: 1;
-  min-height: 0;
-  max-height: 56vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1.1;
-}
-
-#an svg {
-  height: min(45vh, 65vw);
-  width: auto;
-  max-width: 85vw;
-  overflow: visible;
-}
-
-#an.cbox {
-  flex: none;
-  width: min(58vh, 78vw);
-  height: min(58vh, 78vw);
-  max-width: 520px;
-  max-height: 520px;
-  margin: 5px 0;
-  border-radius: 38px;
-  border: 8px solid var(--card);
-  box-shadow: 0 8px 0 #0004;
-  font-size: min(23vh, 35vw);
-}
-
-#bx {
-  flex: 1;
-  min-height: 0;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-#bx svg {
-  height: min(42vh, 60vw);
-  width: auto;
-  max-width: 85vw;
-  overflow: visible;
-}
-
-#ar {
-  font-size: 8vh;
-  line-height: 1;
-}
-
-.bar {
-  flex-shrink: 0;
-  width: 80%;
-  max-width: 520px;
-  height: 20px;
-  background: var(--bar);
-  border: 2px solid #554b9b;
-  border-radius: 15px;
-  overflow: hidden;
-  margin: 4px 0 7px;
-}
-
-.bar i {
-  display: block;
-  width: 0;
-  height: 100%;
-  background: var(--green);
-  transition: width .12s;
-}
-
-#pg i { background: #ff8b4c; }
-
-#v {
-  position: fixed;
-  left: 12px;
-  bottom: calc(14px + env(safe-area-inset-bottom));
-  width: min(58vw, 440px);
-  height: min(52vw, 360px);
-  min-width: 0;
-  min-height: 0;
-  max-width: 92vw;
-  max-height: 48vh;
-  object-fit: cover;
-  object-position: center;
-  background: #000;
-  border: 6px solid #fff;
-  border-radius: 28px;
-  box-shadow: 0 8px 30px #0008;
-  transform: scaleX(-1);
-  z-index: 5;
-  pointer-events: none;
-}
-
-#cheer {
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12vw;
-  font-weight: 900;
-  color: #ffcf35;
-  text-shadow: 0 4px 0 #0005;
-  pointer-events: none;
-  opacity: 0;
-  transform: scale(.6);
-  transition: .25s;
-}
-
-#cheer.on {
-  opacity: 1;
-  transform: scale(1);
-}
-
-#timeup {
-  position: fixed;
-  inset: 0;
-  z-index: 300;
-  background: #17142df2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-
-#timeup h2 {
-  font-size: clamp(32px, 8vw, 52px);
-  color: var(--orange);
-}
-
-#timeup p {
-  font-size: 23px;
-}
-
-#timeup button {
-  background: var(--green);
-  padding: 15px 28px;
-  margin-top: 15px;
-}
+:root{--bg:#1d1a3a;--fg:#fff4d6;--card:#2c2860;--bar:#3a3480;--orange:#ffb52e;--green:#39bb5b}
+*{box-sizing:border-box}
+html,body{width:100%;height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;text-align:center;overflow:hidden}
+[hidden]{display:none!important}
+button{font:inherit;border:0;border-radius:22px;padding:12px 16px;font-size:19px;color:white;background:var(--card);box-shadow:0 4px 0 #0003;cursor:pointer}
+#home{height:100%;overflow-y:auto;padding:max(18px,env(safe-area-inset-top)) 16px 24px;max-width:600px;margin:auto}
+h1{font-size:30px;margin:8px 0 20px}
+.row{display:flex;gap:10px;justify-content:center;margin:12px 0}
+.age button{flex:1}.age button.on{background:#2f9fe8}
+.g{display:block;width:100%;margin:12px 0;padding:18px 12px;font-size:23px}
+.g small{display:block;font-size:14px;margin-top:5px}
+#err{color:#ff8585;min-height:24px;font-size:14px}
+.lb{font-size:15px;margin:5px 0}
+#game{height:100%;height:100dvh;width:100%;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);display:flex;flex-direction:column;align-items:center;overflow:hidden}
+#top{flex-shrink:0;width:100%;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:8px 12px}
+#top button{font-size:15px;padding:8px 10px}
+#st{font-size:19px;font-weight:bold}
+#timer{flex-shrink:0;color:var(--orange);font-size:clamp(21px,5vw,32px);font-weight:800;direction:ltr;margin:2px 0}
+#pr{flex-shrink:0;font-size:clamp(21px,5vw,36px);font-weight:800;min-height:1.4em;padding:0 10px;margin:4px 0}
+#an{flex:1;min-height:0;max-height:56vh;display:flex;align-items:center;justify-content:center;line-height:1.1;transform-origin:center bottom}
+#an.cbox{flex:none;width:min(48vh,76vw);height:min(48vh,76vw);max-width:520px;max-height:520px;margin:5px 0;border-radius:38px;border:8px solid var(--card);box-shadow:0 8px 0 #0004;font-size:min(23vh,35vw)}
+#animalSvg{width:min(68vw,420px);height:min(44vh,370px);overflow:visible}
+#bx{flex:1;min-height:0;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#bx svg{height:min(42vh,60vw);width:auto;max-width:85vw;overflow:visible}
+#ar{font-size:8vh;line-height:1}
+.bar{flex-shrink:0;width:80%;max-width:520px;height:18px;background:var(--bar);border:2px solid #554b9b;border-radius:15px;overflow:hidden;margin:3px 0 5px}
+.bar i{display:block;width:0;height:100%;background:var(--green);transition:width .12s}
+#pg i{background:#ff8b4c}
+#v{position:fixed;left:12px;bottom:calc(14px + env(safe-area-inset-bottom));width:min(58vw,440px);height:min(48vw,360px);max-width:92vw;max-height:42vh;object-fit:cover;object-position:center;background:#000;border:6px solid #fff;border-radius:28px;box-shadow:0 8px 30px #0008;transform:scaleX(-1);z-index:20}
+#cheer{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;font-size:12vw;font-weight:900;color:#ffcf35;text-shadow:0 4px 0 #0005;pointer-events:none;opacity:0;transform:scale(.6);transition:.25s}
+#cheer.on{opacity:1;transform:scale(1)}
+#timeup{position:fixed;inset:0;z-index:50;background:#17142df2;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+#timeup h2{font-size:clamp(32px,8vw,52px);color:var(--orange)}
+#timeup p{font-size:23px}
+#timeup button{background:var(--green);padding:15px 28px;margin-top:15px}
+@media(max-width:600px){#v{width:58vw;height:46vw;max-height:35vh;left:10px;bottom:calc(12px + env(safe-area-inset-bottom));border-width:5px;border-radius:24px}#top button{font-size:14px;padding:8px}#st{font-size:17px}#animalSvg{width:min(70vw,340px);height:min(40vh,300px)}#pr{font-size:clamp(20px,5vw,30px)}.bar{width:82%;height:15px}.lb{font-size:12px}}
+@media(max-height:700px){#v{width:min(46vw,310px);height:min(34vw,220px);max-height:31vh}#animalSvg{height:35vh}#pr{font-size:clamp(18px,4vw,27px)}}
 </style>
 </head>
-
 <body>
 
 <section id="home">
-  <h1>🐾 العب وتحرّك</h1>
-
-  <div class="row age">
-    <button id="a3" class="on" onclick="setAge(3)">👶 عمر ٣ سنوات</button>
-    <button id="a5" onclick="setAge(5)">🧒 عمر ٥ سنوات</button>
-  </div>
-
-  <button class="g" style="background:#ff7a59" onclick="start('dance')">
-    💃 ارقص مع الحيوانات
-    <small>تحرّك وارقص واجمع النجوم</small>
-  </button>
-
-  <button class="g" style="background:#2f9fe8" onclick="start('move')">
-    🧒 قلّد الحركة
-    <small>قلّد حركات الطفل المتحرك</small>
-  </button>
-
-  <button class="g" style="background:#3dbb5c" onclick="start('color')">
-    🎨 ابحث عن اللون
-    <small>هات شيئًا باللون المطلوب وأرِه للكاميرا</small>
-  </button>
-
-  <div id="err"></div>
-
-  <p class="lb">
-    ضع الهاتف في مكان ثابت أمام الطفل. يلزم السماح للمتصفح باستخدام الكاميرا.
-  </p>
+<h1>🐾 العب وتحرّك</h1>
+<div class="row age">
+<button id="a3" class="on" onclick="setAge(3)">👶 عمر ٣ سنوات</button>
+<button id="a5" onclick="setAge(5)">🧒 عمر ٥ سنوات</button>
+</div>
+<button class="g" style="background:#ff7a59" onclick="start('dance')">💃 ارقص مع الحيوانات<small>استمع إلى التعليمات بالعربية وارقص</small></button>
+<button class="g" style="background:#2f9fe8" onclick="start('move')">🧒 قلّد الحركة<small>استمع إلى الحركة وقلّد الطفل</small></button>
+<button class="g" style="background:#3dbb5c" onclick="start('color')">🎨 ابحث عن اللون<small>استمع إلى اسم اللون وأرِه للكاميرا</small></button>
+<div id="err"></div>
+<p class="lb">ضع الهاتف في مكان ثابت أمام الطفل، واسمح للمتصفح باستخدام الكاميرا والصوت.</p>
 </section>
 
 <section id="game" hidden>
-  <div id="top">
-    <button onclick="home()">⬅️ رجوع</button>
-    <span id="st">⭐ 0 / 5</span>
-    <button onclick="flip()">🔄 الكاميرا</button>
-  </div>
+<div id="top">
+<button onclick="home()">⬅️ رجوع</button>
+<span id="st">⭐ 0</span>
+<button onclick="flip()">🔄 الكاميرا</button>
+</div>
+<div id="timer">30:00</div>
+<div id="pr"></div>
+<div id="an"></div>
 
-  <div id="timer">30:00</div>
-  <div id="pr"></div>
-  
-  <div id="an">
-    <svg id="animalSvg" viewBox="0 0 200 270">
-      <g id="animalBodyGroup">
-        <g stroke="#4a2c17" stroke-width="18" stroke-linecap="round">
-          <line id="legL" x1="75" y1="160" x2="70" y2="230"/>
-          <line id="legR" x1="125" y1="160" x2="130" y2="230"/>
-        </g>
-        <ellipse cx="65" cy="238" rx="16" ry="8" fill="#333"/>
-        <ellipse cx="135" cy="238" rx="16" ry="8" fill="#333"/>
-
-        <g stroke="#d99b67" stroke-width="15" stroke-linecap="round">
-          <line id="armL" x1="65" y1="105" x2="25" y2="140"/>
-          <line id="armR" x1="135" y1="105" x2="175" y2="140"/>
-        </g>
-
-        <rect id="torso" x="55" y="85" width="90" height="90" rx="25" fill="#f4a261"/>
-
-        <g id="headGroup">
-          <circle cx="100" cy="55" r="40" fill="#f4a261"/>
-          <circle cx="70" cy="30" r="14" fill="#d99b67"/>
-          <circle cx="130" cy="30" r="14" fill="#d99b67"/>
-          <circle cx="85" cy="50" r="5" fill="#222"/>
-          <circle cx="115" cy="50" r="5" fill="#222"/>
-          <path d="M90 68 Q100 78 110 68" stroke="#222" stroke-width="3" fill="none" stroke-linecap="round"/>
-        </g>
-      </g>
-    </svg>
-  </div>
-
-  <div id="bx" hidden>
-    <div id="ar">⬆️</div>
-
-    <svg id="boy" viewBox="0 0 200 270">
-      <g id="bb">
-        <g stroke="#3b5bdb" stroke-width="19" stroke-linecap="round">
-          <line x1="86" y1="165" x2="82" y2="232"/>
-          <line x1="114" y1="165" x2="118" y2="232"/>
-        </g>
-
-        <ellipse cx="78" cy="241" rx="19" ry="9" fill="#444"/>
-        <ellipse cx="122" cy="241" rx="19" ry="9" fill="#444"/>
-
-        <g id="aL">
-          <line x1="68" y1="108" x2="68" y2="172"
-            stroke="#ffcc99" stroke-width="16" stroke-linecap="round"/>
-        </g>
-
-        <g id="aR">
-          <line x1="132" y1="108" x2="132" y2="172"
-            stroke="#ffcc99" stroke-width="16" stroke-linecap="round"/>
-        </g>
-
-        <rect x="60" y="92" width="80" height="84" rx="26" fill="#ff7a59"/>
-        <circle cx="100" cy="62" r="38" fill="#ffd9b3"/>
-
-        <path d="M62 56 Q100 4 138 56 Q120 34 100 38 Q80 34 62 56Z"
-          fill="#4a2c17"/>
-
-        <circle cx="87" cy="66" r="4.5" fill="#222"/>
-        <circle cx="113" cy="66" r="4.5" fill="#222"/>
-
-        <path d="M88 81 Q100 93 112 81"
-          stroke="#222" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-      </g>
-    </svg>
-  </div>
-
-  <div class="lb">مقياس الحركة</div>
-  <div class="bar" id="mt"><i></i></div>
-
-  <div class="lb">التقدم نحو النجمة القادمة</div>
-  <div class="bar" id="pg"><i></i></div>
+<div id="bx" hidden>
+<div id="ar">⬆️</div>
+<svg id="boy" viewBox="0 0 200 270" aria-label="طفل متحرك">
+<g id="bb">
+<g id="legs">
+<g id="legL"><path d="M82 158 L72 218" stroke="#3b5bdb" stroke-width="19" stroke-linecap="round"/><ellipse cx="63" cy="229" rx="19" ry="10" fill="#444"/></g>
+<g id="legR"><path d="M118 158 L128 218" stroke="#3b5bdb" stroke-width="19" stroke-linecap="round"/><ellipse cx="137" cy="229" rx="19" ry="10" fill="#444"/></g>
+</g>
+<g id="aL"><path d="M65 105 L42 157" stroke="#ffcc99" stroke-width="16" stroke-linecap="round"/><circle cx="39" cy="162" r="9" fill="#ffd9b3"/></g>
+<g id="aR"><path d="M135 105 L158 157" stroke="#ffcc99" stroke-width="16" stroke-linecap="round"/><circle cx="161" cy="162" r="9" fill="#ffd9b3"/></g>
+<rect x="60" y="88" width="80" height="83" rx="25" fill="#ff7a59"/>
+<circle cx="100" cy="57" r="38" fill="#ffd9b3"/>
+<path d="M62 52 Q100 0 138 52 Q120 29 100 34 Q80 29 62 52Z" fill="#4a2c17"/>
+<circle cx="87" cy="61" r="4.5" fill="#222"/><circle cx="113" cy="61" r="4.5" fill="#222"/>
+<path d="M88 76 Q100 89 112 76" stroke="#222" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+</g>
+</svg>
+</div>
+<div class="lb">مقياس الحركة</div><div class="bar" id="mt"><i></i></div>
+<div class="lb">التقدم نحو النجمة القادمة</div><div class="bar" id="pg"><i></i></div>
 </section>
 
 <video id="v" playsinline muted autoplay hidden></video>
 <div id="cheer"></div>
-
 <div id="timeup" hidden>
-  <h2>🎉 انتهى وقت اللعب!</h2>
-  <p>أحسنت يا بطل! لعبت لمدة نصف ساعة.</p>
-  <p id="finalStars"></p>
-  <button onclick="home()">العودة إلى القائمة</button>
+<h2>🎉 انتهى وقت اللعب!</h2>
+<p>أحسنت يا بطل! لعبت لمدة نصف ساعة.</p>
+<p id="finalStars"></p>
+<button onclick="home()">العودة إلى القائمة</button>
 </div>
 
 <script>
-const $ = id => document.getElementById(id);
-const GOAL = 5;
-const GAME_DURATION = 30 * 60 * 1000;
+const $=id=>document.getElementById(id);
+const GOAL=5,GAME_DURATION=30*60*1000;
+let age=3,game='',stars=0,stream=null,facing='user',ac=null,run=false,last=0,prev=null,sm=0,prog=0,hold=0,mv=null,col=null,musicTimer=null,musicStep=0,gameStartedAt=0,timerInterval=null,sessionFinished=false,voicesList=[],roundStarted=0;
+const v=$('v'),cv=document.createElement('canvas');
+cv.width=48;cv.height=36;
+const cx=cv.getContext('2d',{willReadFrequently:true});
 
-let age = 3;
-let game = '';
-let stars = 0;
-let stream = null;
-let facing = 'user';
-let ac = null;
-let run = false;
-let last = 0;
-let prev = null;
-let sm = 0;
-let prog = 0;
-let hold = 0;
-let mv = null;
-let col = null;
-let an = false;
-let musicTimer = null;
-let musicStep = 0;
-let gameStartedAt = 0;
-let timerInterval = null;
-let sessionFinished = false;
-let voicesList = [];
-
-const v = $('v');
-const cv = document.createElement('canvas');
-cv.width = 48;
-cv.height = 36;
-const cx = cv.getContext('2d', { willReadFrequently: true });
-
-const COL = [
-  ['أحمر', '🐞', h => h < 14 || h > 346, '#e53935'],
-  ['أصفر', '🐥', h => h > 44 && h < 68, '#fdd835'],
-  ['أخضر', '🐸', h => h > 85 && h < 160, '#43a047'],
-  ['أزرق', '🐳', h => h > 195 && h < 250, '#1e88e5'],
-  ['برتقالي', '🦊', h => h >= 18 && h <= 38, '#fb8c00']
+const COL=[
+{name:'أحمر',emoji:'🐞',hue:h=>h<14||h>346,hex:'#e53935'},
+{name:'أصفر',emoji:'🐥',hue:h=>h>40&&h<68,hex:'#fdd835'},
+{name:'أخضر',emoji:'🐸',hue:h=>h>78&&h<165,hex:'#43a047'},
+{name:'أزرق',emoji:'🐳',hue:h=>h>190&&h<255,hex:'#1e88e5'},
+{name:'برتقالي',emoji:'🦊',hue:h=>h>=15&&h<=40,hex:'#fb8c00'}
+];
+const MOV=[
+{text:'ارفع يديك إلى الأعلى',spoken:'ارفع يديك إلى الأعلى',emoji:'⬆️',key:'top'},
+{text:'انزل إلى الأسفل',spoken:'انزل إلى الأسفل',emoji:'⬇️',key:'bot'},
+{text:'تحرك ناحية اليسار',spoken:'تحرك ناحية اليسار',emoji:'⬅️',key:'left'},
+{text:'تحرك ناحية اليمين',spoken:'تحرك ناحية اليمين',emoji:'➡️',key:'right'},
+{text:'اقفز إلى الأعلى',spoken:'اقفز إلى الأعلى',emoji:'↕️',key:'all'}
+];
+const ANIMALS=[
+{name:'الدب',emoji:'🐻',color:'#9a633b',belly:'#e9c49a',muzzle:'#f1d5b6',ear:'#754424'},
+{name:'الأسد',emoji:'🦁',color:'#f3b52b',belly:'#ffe3a1',muzzle:'#ffe0b0',ear:'#c77c18'},
+{name:'القرد',emoji:'🐵',color:'#9b6039',belly:'#e6b68d',muzzle:'#e6b68d',ear:'#774526'},
+{name:'القطة',emoji:'🐱',color:'#e5a0a0',belly:'#ffe1dc',muzzle:'#ffe1dc',ear:'#c96c83'},
+{name:'الكلب',emoji:'🐶',color:'#d8a46e',belly:'#f4dfbd',muzzle:'#f4dfbd',ear:'#8d5b36'},
+{name:'الفيل',emoji:'🐘',color:'#8f9fae',belly:'#d5e0e8',muzzle:'#c5d1db',ear:'#718496'},
+{name:'الباندا',emoji:'🐼',color:'#f7f7f7',belly:'#ffffff',muzzle:'#ffffff',ear:'#222222'},
+{name:'الثعلب',emoji:'🦊',color:'#f28c38',belly:'#fff0d8',muzzle:'#fff0d8',ear:'#b94f24'}
 ];
 
-const MOV = [
-  ['ارفع يديك للأعلى', '⬆️', 'top'],
-  ['انزل للأسفل', '⬇️', 'bot'],
-  ['تحرك ناحية اليسار', '⬅️', 'left'],
-  ['تحرك ناحية اليمين', '➡️', 'right'],
-  ['اقفز عاليًا', '↕️', 'all']
-];
+function loadVoices(){try{voicesList=speechSynthesis.getVoices()}catch(e){}}
+if('speechSynthesis'in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
 
-const OK = ['أحسنت', 'أحسنت يا بطل', 'برافو', 'ممتاز', 'رائع'];
+function setAge(a){age=a;$('a3').className=a===3?'on':'';$('a5').className=a===5?'on':''}
 
-function loadVoices() {
-  if (typeof speechSynthesis !== 'undefined') {
-    voicesList = speechSynthesis.getVoices();
-  }
-}
-loadVoices();
-if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
-  speechSynthesis.onvoiceschanged = loadVoices;
+function say(text,cancel=true){
+try{
+if(!('speechSynthesis'in window))return;
+if(cancel)speechSynthesis.cancel();
+const u=new SpeechSynthesisUtterance(text);
+u.lang='ar-SA';u.rate=.88;u.pitch=1.12;u.volume=1;
+if(!voicesList.length)loadVoices();
+const ar=voicesList.filter(x=>x.lang&&x.lang.replace('_','-').toLowerCase().startsWith('ar'));
+if(ar.length)u.voice=ar.find(x=>/ar-SA|ar-EG/i.test(x.lang))||ar[0];
+speechSynthesis.speak(u);
+}catch(e){}
 }
 
-function setAge(a) {
-  age = a;
-  $('a3').className = a === 3 ? 'on' : '';$('a5').className = a === 5 ? 'on' : '';
+function startMusic(){
+stopMusic();if(!ac)return;
+if(ac.state==='suspended')ac.resume();
+const melody=[440,523.25,659.25,783.99,659.25,523.25,587.33,698.46];
+musicStep=0;
+musicTimer=setInterval(()=>{
+if(!run||game!=='dance')return;
+try{
+const t=ac.currentTime,f=melody[musicStep%melody.length];
+const o=ac.createOscillator(),g=ac.createGain();
+o.type='triangle';o.frequency.value=f;
+g.gain.setValueAtTime(.001,t);g.gain.exponentialRampToValueAtTime(.075,t+.03);g.gain.exponentialRampToValueAtTime(.001,t+.22);
+o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+.24);musicStep++;
+}catch(e){}
+},250);
+}
+function stopMusic(){if(musicTimer){clearInterval(musicTimer);musicTimer=null}}
+function beep(f=660,d=.14){
+if(!ac)return;
+try{const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=f;g.gain.value=.12;o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}
+}
+function banner(text){const c=$('cheer');c.textContent=text;c.classList.add('on');setTimeout(()=>c.classList.remove('on'),1000)}
+
+function updateTimer(){
+if(!run||sessionFinished)return;
+const remain=Math.max(0,GAME_DURATION-(Date.now()-gameStartedAt)),sec=Math.ceil(remain/1000);
+$('timer').textContent=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');
+if(remain<=0)endSession();
+}
+function endSession(){
+if(sessionFinished)return;
+sessionFinished=true;run=false;stopMusic();
+if(timerInterval)clearInterval(timerInterval);timerInterval=null;
+$('timer').textContent='00:00';$('finalStars').textContent='⭐ عدد النجوم التي جمعتها: '+stars;
+$('timeup').hidden=false;say('انتهى وقت اللعب. أحسنت يا بطل!',true);
+}
+function award(){
+if(!run)return;
+stars++;$('st').textContent='⭐ '+stars;
+[523,659,784].forEach((f,i)=>setTimeout(()=>{if(run)beep(f)},i*100));
+const praise=['أحسنت يا بطل!','رائع جدًا!','ممتاز!','برافو عليك!','أحسنت!'];
+const message=praise[Math.floor(Math.random()*praise.length)];
+banner(['🌟 أحسنت!','🎉 برافو!','👏 رائع!'][stars%3]);say(message,true);
+if(stars%GOAL===0){setTimeout(()=>{if(run)say('جميل! جمعت خمس نجوم. هيا نواصل اللعب!',true)},700)}
+next();
 }
 
-function say(t, cancel = true) {
-  try {
-    if (!('speechSynthesis' in window)) return;
-    if (cancel) speechSynthesis.cancel();
-
-    const u = new SpeechSynthesisUtterance(t);
-    u.lang = 'ar-SA';
-
-    if (voicesList.length === 0) {
-      voicesList = speechSynthesis.getVoices();
-    }
-
-    const arVoices = voicesList.filter(x => x.lang && x.lang.replace('_', '-').toLowerCase().startsWith('ar'));
-    if (arVoices.length > 0) {
-      u.voice = arVoices.find(x => /female|woman|girl|laila|layla|mariam|maryam|zeina|zaina|sara|salma|hoda|هدى|ليلى|مريم/i.test(x.name)) || arVoices[0];
-    }
-
-    u.pitch = 1.25;
-    u.rate = 0.92;
-    u.volume = 1;
-    speechSynthesis.speak(u);
-  } catch (e) {}
+async function cam(){
+if(!navigator.mediaDevices?.getUserMedia)throw Error('camera unavailable');
+if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
+stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing,width:{ideal:1280},height:{ideal:720}},audio:false});
+v.srcObject=stream;v.hidden=false;await v.play();prev=null;
 }
 
-function startMusic() {
-  stopMusic();
-  if (!ac) return;
-
-  if (ac.state === 'suspended') {
-    ac.resume();
-  }
-
-  musicStep = 0;
-  const melody = [440, 523.25, 659.25, 783.99, 659.25, 523.25];
-
-  musicTimer = setInterval(() => {
-    if (!run || game !== 'dance') return;
-
-    try {
-      const t = ac.currentTime;
-      const note = melody[musicStep % melody.length];
-      
-      const o = ac.createOscillator();
-      const g = ac.createGain();
-
-      o.type = 'triangle';
-      o.frequency.setValueAtTime(note, t);
-      g.gain.setValueAtTime(0.001, t);
-      g.gain.exponentialRampToValueAtTime(0.08, t + 0.05);
-      g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
-
-      o.connect(g);
-      g.connect(ac.destination);
-      o.start(t);
-      o.stop(t + 0.25);
-
-      musicStep++;
-    } catch (e) {}
-  }, 250);
+async function start(g){
+if(run)return;
+game=g;sessionFinished=false;$('timeup').hidden=true;$('err').textContent='';
+try{
+ac=ac||new(window.AudioContext||window.webkitAudioContext)();
+if(ac.state==='suspended')await ac.resume();
+await cam();
+}catch(e){$('err').textContent='تعذّر فتح الكاميرا. اسمح للمتصفح باستخدام الكاميرا وافتح الصفحة عبر HTTPS.';return}
+$('home').hidden=true;$('game').hidden=false;
+stars=0;prog=0;hold=0;sm=0;prev=null;last=0;
+$('st').textContent='⭐ 0';run=true;gameStartedAt=Date.now();
+if(timerInterval)clearInterval(timerInterval);
+updateTimer();timerInterval=setInterval(updateTimer,250);
+say(g==='dance'?'أهلًا يا أبطال! هيا نرقص مع الحيوانات.':g==='move'?'أهلًا يا بطل! استمع إلى التعليمات وقلّد الحركة.':'أهلًا يا أبطال! هيا نلعب لعبة الألوان.',true);
+next();if(g==='dance')startMusic();
+requestAnimationFrame(loop);
+if(g==='move')requestAnimationFrame(animateBoy);
 }
 
-function stopMusic() {
-  if (musicTimer) {
-    clearInterval(musicTimer);
-    musicTimer = null;
-  }
+function home(){
+run=false;stopMusic();
+if(timerInterval)clearInterval(timerInterval);timerInterval=null;
+try{speechSynthesis.cancel()}catch(e){}
+$('timeup').hidden=true;$('game').hidden=true;$('home').hidden=false;v.hidden=true;
+if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
+}
+async function flip(){if(!run)return;facing=facing==='user'?'environment':'user';try{await cam()}catch(e){banner('تعذّر تغيير الكاميرا')}}
+function resetBars(){hold=0;$('mt').firstElementChild.style.width='0%';$('pg').firstElementChild.style.width='0%'}
+
+function next(){
+if(!run)return;
+resetBars();roundStarted=Date.now();
+$('an').className='';$('an').style.transform='';$('an').style.background='';
+$('bx').hidden=game!=='move';$('an').hidden=game==='move';
+if(game==='dance'){
+const animal=ANIMALS[Math.floor(Math.random()*ANIMALS.length)];
+$('pr').textContent='ارقص مع '+animal.name+'! 💃';
+renderAnimal(animal);
+say('هيا نرقص مع '+animal.name+'. حرّك جسمك وذراعيك!',true);
+}else if(game==='move'){
+const choices=age===3?[0,2,3,4]:[0,1,2,3,4],m=MOV[choices[Math.floor(Math.random()*choices.length)]];
+mv=m;$('pr').textContent=m.text;$('ar').textContent=m.emoji;
+say(m.spoken,true);
+}else{
+col=COL[Math.floor(Math.random()*COL.length)];
+$('pr').textContent='أحضر شيئًا لونه '+col.name;
+$('an').className='cbox';$('an').style.background=col.hex;$('an').textContent=col.emoji;
+say('ابحث عن اللون '+col.name+'. أحضر شيئًا بهذا اللون وأرِه للكاميرا.',true);
+}
 }
 
-function beep(f, d = .15) {
-  if (!ac) return;
-  try {
-    if (ac.state === 'suspended') ac.resume();
-    const o = ac.createOscillator();
-    const g = ac.createGain();
-
-    o.frequency.value = f;
-    o.type = 'sine';
-    g.gain.value = .12;
-    o.connect(g);
-    g.connect(ac.destination);
-    o.start();
-    o.stop(ac.currentTime + d);
-  } catch(e) {}
+/* يرسم الحيوان كاملًا كرسمة SVG بأطراف مستقلة قابلة للتحريك */
+function renderAnimal(a){
+$('an').className='';$('an').style.background='';$('an').innerHTML=`
+<svg id="animalSvg" viewBox="0 0 300 300" role="img" aria-label="${a.name}">
+<g id="animalDance">
+<!-- الذيل -->
+<g id="tail"><path d="M202 190 Q253 190 251 151 Q250 135 236 143" fill="none" stroke="${a.color}" stroke-width="17" stroke-linecap="round"/><circle cx="236" cy="143" r="9" fill="${a.belly}"/></g>
+<!-- الأرجل والقدمان -->
+<g id="animalLegL"><path d="M116 202 L102 249" stroke="${a.color}" stroke-width="23" stroke-linecap="round"/><ellipse cx="91" cy="253" rx="22" ry="12" fill="${a.belly}"/></g>
+<g id="animalLegR"><path d="M183 202 L198 248" stroke="${a.color}" stroke-width="23" stroke-linecap="round"/><ellipse cx="208" cy="253" rx="22" ry="12" fill="${a.belly}"/></g>
+<!-- الذراعان -->
+<g id="animalArmL"><path d="M104 133 Q72 147 67 183" fill="none" stroke="${a.color}" stroke-width="24" stroke-linecap="round"/><ellipse cx="65" cy="188" rx="14" ry="13" fill="${a.belly}"/></g>
+<g id="animalArmR"><path d="M196 133 Q228 147 233 183" fill="none" stroke="${a.color}" stroke-width="24" stroke-linecap="round"/><ellipse cx="235" cy="188" rx="14" ry="13" fill="${a.belly}"/></g>
+<!-- الجسم والبطن -->
+<g id="animalBody"><ellipse cx="150" cy="170" rx="65" ry="62" fill="${a.color}" stroke="#0002" stroke-width="3"/><ellipse cx="150" cy="180" rx="36" ry="40" fill="${a.belly}"/></g>
+<!-- الأذنان -->
+<g id="animalEarL"><circle cx="108" cy="67" r="23" fill="${a.ear}"/><circle cx="108" cy="67" r="12" fill="${a.belly}"/></g>
+<g id="animalEarR"><circle cx="192" cy="67" r="23" fill="${a.ear}"/><circle cx="192" cy="67" r="12" fill="${a.belly}"/></g>
+<!-- الرأس -->
+<g id="animalHead"><circle cx="150" cy="103" r="58" fill="${a.color}" stroke="#0002" stroke-width="3"/>
+<ellipse cx="150" cy="120" rx="31" ry="22" fill="${a.muzzle}"/>
+<ellipse cx="150" cy="111" rx="8" ry="6" fill="#30252b"/>
+<ellipse cx="130" cy="99" rx="6" ry="8" fill="#30252b"/><ellipse cx="170" cy="99" rx="6" ry="8" fill="#30252b"/>
+<circle cx="128" cy="98" r="2" fill="white"/><circle cx="168" cy="98" r="2" fill="white"/>
+<path d="M137 127 Q150 139 163 127" fill="none" stroke="#30252b" stroke-width="3.5" stroke-linecap="round"/>
+</g>
+</g>
+</svg>`;
 }
 
-function banner(t) {
-  const c = $('cheer');
-  c.textContent = t;
-  c.classList.add('on');
-  setTimeout(() => c.classList.remove('on'), 1000);
+/* تحريك مستقل للرأس والذراعين والساقين والقدمين والذيل أثناء الرقص */
+function animateAnimal(t){
+if(!run||game!=='dance'||$('an').hidden||!$('animalDance'))return;
+const g=$('animalDance'),wave=t/170;
+const set=(id,angle,x,y)=>{
+const el=document.getElementById(id);if(el)el.setAttribute('transform',`rotate(${angle} ${x} ${y})`);
+};
+set('animalHead',Math.sin(wave)*10,150,155);
+set('animalArmL',Math.sin(wave+Math.PI)*48,104,135);
+set('animalArmR',Math.sin(wave)*48,196,135);
+set('animalLegL',Math.sin(wave+Math.PI)*24,116,205);
+set('animalLegR',Math.sin(wave)*24,184,205);
+set('animalEarL',Math.sin(wave)*8,108,67);
+set('animalEarR',Math.sin(wave)*8,192,67);
+set('tail',Math.sin(wave*1.4)*25,205,190);
+const body=document.getElementById('animalBody');
+if(body)body.setAttribute('transform',`translate(0 ${Math.sin(wave*2)*5})`);
+$('animalSvg').style.transform=`translateY(${Math.abs(Math.sin(wave))*9}px) rotate(${Math.sin(wave)*3}deg)`;
+requestAnimationFrame(animateAnimal);
 }
 
-function updateTimer() {
-  if (!run || sessionFinished) return;
-
-  const remaining = Math.max(0, GAME_DURATION - (Date.now() - gameStartedAt));
-  const totalSeconds = Math.ceil(remaining / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-
-  $('timer').textContent =
-    String(minutes).padStart(2, '0') + ':' +
-    String(seconds).padStart(2, '0');
-
-  if (remaining <= 0) endSession();
+function animateBoy(t){
+if(!run||game!=='move')return;
+requestAnimationFrame(animateBoy);
+if(!mv)return;
+const k=mv.key,p=(Math.sin(t/260)+1)/2;
+let aL=10,aR=-10,tx=0,ty=0,rot=0;
+if(k==='top'){aL=150+25*p;aR=-aL}
+else if(k==='bot'){ty=20*p;aL=40;aR=-40}
+else if(k==='left'){tx=-35*p;aL=aR=90;rot=-5*p}
+else if(k==='right'){tx=35*p;aL=aR=-90;rot=5*p}
+else{ty=-35*Math.abs(Math.sin(t/260));aL=140;aR=-140}
+$('bb').setAttribute('transform',`translate(${tx} ${ty}) rotate(${rot} 100 180)`);
+$('aL').setAttribute('transform',`rotate(${aL} 65 105)`);
+$('aR').setAttribute('transform',`rotate(${aR} 135 105)`);
+$('legL').setAttribute('transform',`rotate(${Math.sin(t/160)*15} 82 158)`);
+$('legR').setAttribute('transform',`rotate(${-Math.sin(t/160)*15} 118 158)`);
 }
 
-function endSession() {
-  if (sessionFinished) return;
-
-  sessionFinished = true;
-  run = false;
-  stopMusic();
-
-  if (timerInterval) {
-    clearInterval(timerInterval);
-    timerInterval = null;
-  }
-
-  $('timer').textContent = '00:00';$('finalStars').textContent = '⭐ عدد النجوم التي جمعتها: ' + stars;
-  $('timeup').hidden = false;
-
-  say('انتهى وقت اللعب. أحسنت يا بطل!', true);
+function isTargetColor(r,g,b){
+const max=Math.max(r,g,b),min=Math.min(r,g,b),delta=max-min;
+if(max<65||delta<35||delta/(max||1)<.28)return false;
+let h;
+if(delta===0)h=0;
+else if(max===r)h=60*(((g-b)/delta)%6);
+else if(max===g)h=60*((b-r)/delta+2);
+else h=60*((r-g)/delta+4);
+if(h<0)h+=360;
+return col.hue(h);
 }
 
-function ok() {
-  if (!run || sessionFinished) return;
-
-  stars++;
-  $('st').textContent = '⭐ ' + stars + ' / ' + GOAL;
-
-  [523, 659, 784].forEach((f, i) => setTimeout(() => {
-    if (run) beep(f);
-  }, i * 100));
-
-  banner(['أحسنت! 🌟', 'برافو! 🎉', 'رائع! 👏'][stars % 3]);
-  say(OK[Math.random() * OK.length | 0], true);
-
-  if (stars >= GOAL) {
-    stars = 0;
-    $('st').textContent = '⭐ 0 / ' + GOAL;
-    banner('رائع! جولة جديدة 🎉');
-    setTimeout(() => {
-      if (run) next();
-    }, 700);
-  } else {
-    next();
-  }
+function loop(t){
+if(!run||sessionFinished)return;
+requestAnimationFrame(loop);
+if(t-last<100||v.readyState<2)return;
+last=t;
+cx.save();cx.translate(cv.width,0);cx.scale(-1,1);cx.drawImage(v,0,0,cv.width,cv.height);cx.restore();
+const d=cx.getImageData(0,0,cv.width,cv.height).data,n=cv.width*cv.height;
+let changed=0,top=0,bottom=0,left=0,right=0,colorCount=0;
+for(let y=0;y<cv.height;y++){
+for(let x=0;x<cv.width;x++){
+const i=(y*cv.width+x)*4;
+if(prev){
+const diff=Math.abs(d[i]-prev[i])+Math.abs(d[i+1]-prev[i+1])+Math.abs(d[i+2]-prev[i+2]);
+if(diff>105){changed++;if(y<cv.height/3)top++;if(y>cv.height*2/3)bottom++;if(x<cv.width/2)left++;else right++}
 }
+if(game==='color'&&x>5&&x<43&&y>4&&y<32&&isTargetColor(d[i],d[i+1],d[i+2]))colorCount++;
+}}
+prev=new Uint8ClampedArray(d);sm=sm*.6+(changed/n)*.4;
+const level=Math.min(1,sm/.16);
+$('mt').firstElementChild.style.width=(level*100)+'%';
 
-async function cam() {
-  if (stream) {
-    stream.getTracks().forEach(t => t.stop());
-    stream = null;
-  }
-
-  stream = await navigator.mediaDevices.getUserMedia({
-    video: {
-      facingMode: facing,
-      width: { ideal: 1280 },
-      height: { ideal: 720 },
-      frameRate: { ideal: 30, max: 60 }
-    },
-    audio: false
-  });
-
-  v.srcObject = stream;
-  v.hidden = false;
-  await v.play();
-  prev = null;
+if(game==='dance'){
+if($('animalSvg'))animateAnimal(t);
+if(sm>(age===3?.03:.06))prog+=level;
+const need=age===3?20:30;
+$('pg').firstElementChild.style.width=Math.min(100,prog/need*100)+'%';
+if(prog>=need){prog=0;award()}
+}else if(game==='move'&&mv){
+const k=mv.key;
+const f=k==='top'?top/n:k==='bot'?bottom/n:k==='left'?left/n:k==='right'?right/n:changed/n;
+if(f>(age===3?.08:.12))hold++;else hold=Math.max(0,hold-1);
+$('pg').firstElementChild.style.width=Math.min(100,hold/(age===3?8:6)*100)+'%';
+if(hold>=(age===3?8:6))award();
+}else if(game==='color'){
+if(colorCount/(38*28)>.10)hold++;else hold=0;
+$('pg').firstElementChild.style.width=Math.min(100,hold/8*100)+'%';
+if(hold>=8)award();
 }
-
-async function start(g) {
-  if (run) return;
-
-  game = g;
-  sessionFinished = false;
-  $('timeup').hidden = true;
-  $('err').textContent = '';
-
-  try {
-    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
-    if (ac.state === 'suspended') await ac.resume();
-    await cam();
-  } catch (e) {
-    $('err').textContent = 'تعذّر فتح الكاميرا. اسمح للمتصفح باستخدام الكاميرا.';
-    return;
-  }
-
-  $('home').hidden = true;
-  $('game').hidden = false;
-
-  stars = 0;
-  prog = 0;
-  hold = 0;
-  sm = 0;
-  prev = null;
-
-  $('st').textContent = '⭐ 0 / ' + GOAL;
-
-  run = true;
-  gameStartedAt = Date.now();
-
-  if (timerInterval) clearInterval(timerInterval);
-  updateTimer();
-  timerInterval = setInterval(updateTimer, 250);
-
-  const welcomeText = g === 'dance' ? 'مرحبًا يا بطل! هيا نرقص مع الحيوانات' : g === 'move' ? 'مرحبًا يا بطل! هيا نقلّد الحركة' : 'مرحبًا يا بطل! هيا نبحث عن الألوان';
-  say(welcomeText, true);
-
-  next();
-
-  if (g === 'dance') startMusic();
-
-  requestAnimationFrame(loop);
+if(Date.now()-roundStarted>(game==='color'?25000:20000)){
+roundStarted=Date.now();hold=0;
+if(game==='color'){banner('حاول مرة أخرى');say('حاول مرة أخرى. قرّب الشيء الملون من الكاميرا.',true)}
+else if(game==='move'){banner('هيا حاول!');say('هيا حاول مرة أخرى. قلّد الحركة.',true)}
+else{say('هيا استمر في الرقص!',true)}
 }
-
-function home() {
-  run = false;
-  stopMusic();
-
-  if (timerInterval) {
-    clearInterval(timerInterval);
-    timerInterval = null;
-  }
-
-  try {
-    speechSynthesis.cancel();
-  } catch (e) {}
-
-  $('timeup').hidden = true;
-  $('game').hidden = true;
-  $('home').hidden = false;
-  v.hidden = true;
-
-  if (stream) {
-    stream.getTracks().forEach(t => t.stop());
-    stream = null;
-  }
 }
-
-async function flip() {
-  if (!run) return;
-  facing = facing === 'user' ? 'environment' : 'user';
-  try {
-    await cam();
-  } catch (e) {
-    banner('تعذّر تغيير الكاميرا');
-  }
-}
-
-function next() {
-  if (!run) return;
-
-  hold = 0;
-  $('mt').firstElementChild.style.width = '0\%';$('pg').firstElementChild.style.width = '0%';
-
-  $('bx').hidden = game !== 'move';$('an').hidden = game === 'move';
-
-  if (game === 'dance') {
-    $('pr').textContent = 'ارقص مع الصديق اللطيف! 💃';
-    say('ارقص مع الصديق اللطيف', true);
-  } else if (game === 'move') {
-    const choices = age === 3 ? [0, 2, 3, 4] : [0, 1, 2, 3, 4];
-    mv = MOV[choices[Math.random() * choices.length | 0]];
-    $('pr').textContent = mv[0];$('ar').textContent = mv[1];
-    say(mv[0], true);
-  } else {
-    col = COL[Math.random() * COL.length | 0];
-    $('pr').textContent = 'هات شيئًا ' + col[0] + ' وأرِه للكاميرا!';
-    $('an').className = 'cbox';
-    $('an').style.background = col[3];$('animalSvg').hidden = true;
-    $('an').textContent = col[1];
-    say('هات شيئًا باللون ' + col[0] + ' وأرِه للكاميرا', true);
-  }
-
-  if (game !== 'color') {
-    $('an').classList.remove('cbox');
-    $('an').style.background = '';$('animalSvg').hidden = false;
-  }
-}
-
-function match(r, g, b) {
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  const delta = max - min;
-
-  if (max < 65 || delta < 35 || delta / (max || 1) < .28) return false;
-
-  let h;
-  if (delta === 0) h = 0;
-  else if (max === r) h = 60 * (((g - b) / delta) % 6);
-  else if (max === g) h = 60 * ((b - r) / delta + 2);
-  else h = 60 * ((r - g) / delta + 4);
-
-  if (h < 0) h += 360;
-  return col[2](h);
-}
-
-function loop(t) {
-  if (!run || sessionFinished) return;
-  requestAnimationFrame(loop);
-
-  if (t - last < 100 || v.readyState < 2) return;
-  last = t;
-
-  cx.save();
-  cx.translate(cv.width, 0);
-  cx.scale(-1, 1);
-  cx.drawImage(v, 0, 0, cv.width, cv.height);
-  cx.restore();
-
-  const d = cx.getImageData(0, 0, cv.width, cv.height).data;
-  const n = cv.width * cv.height;
-
-  let changed = 0;
-  let top = 0, bottom = 0, left = 0, right = 0;
-  let colorCount = 0;
-
-  for (let y = 0; y < cv.height; y++) {
-    for (let x = 0; x < cv.width; x++) {
-      const i = (y * cv.width + x) * 4;
-
-      if (prev) {
-        const diff =
-          Math.abs(d[i] - prev[i]) +
-          Math.abs(d[i + 1] - prev[i + 1]) +
-          Math.abs(d[i + 2] - prev[i + 2]);
-
-        if (diff > 105) {
-          changed++;
-          if (y < cv.height / 3) top++;
-          if (y > cv.height * 2 / 3) bottom++;
-          if (x < cv.width / 2) left++;
-          else right++;
-        }
-      }
-
-      if (
-        game === 'color' &&
-        x > 8 && x < 40 &&
-        y > 6 && y < 30 &&
-        match(d[i], d[i + 1], d[i + 2])
-      ) {
-        colorCount++;
-      }
-    }
-  }
-
-  prev = new Uint8ClampedArray(d);
-  sm = sm * .6 + (changed / n) * .4;
-
-  const level = Math.min(1, sm / .16);
-  $('mt').firstElementChild.style.width = (level * 100) + '%';
-
-  if (game === 'dance') {
-    const bodyTranslateY = Math.sin(t / 100) * 10;
-    
-    $('armL').setAttribute('y2', 140 + Math.sin(t / 120) * 25);$('armR').setAttribute('y2', 140 - Math.sin(t / 120) * 25);
-
-    $('legL').setAttribute('x2', 70 + Math.sin(t / 150) * 10);$('legR').setAttribute('x2', 130 - Math.sin(t / 150) * 10);
-
-    $('headGroup').setAttribute('transform', `translate(0, ${Math.sin(t / 100) * 5}) rotate(${Math.sin(t / 180) * 10}, 100, 55)`);
-    $('torso').setAttribute('transform', `translate(0, ${bodyTranslateY})`);
-  } else if (game === 'move' && mv) {
-    const k = mv[2];
-    const p = (Math.sin(t / 260) + 1) / 2;
-
-    let tx = 0, ty = 0, sy = 1, rot = 0;
-    let aL = 10, aR = -10;
-
-    if (k === 'top') {
-      aL = 150 + 25 * p;
-      aR = -aL;
-    } else if (k === 'bot') {
-      sy = 1 - .3 * p;
-      aL = 40;
-      aR = -40;
-    } else if (k === 'left') {
-      tx = -50 * p;
-      rot = -8 * p;
-      aL = aR = 90;
-    } else if (k === 'right') {
-      tx = 50 * p;
-      rot = 8 * p;
-      aL = aR = -90;
-    } else {
-      ty = -55 * Math.abs(Math.sin(t / 260));
-      aL = 140;
-      aR = -140;
-    }
-
-    $('bb').setAttribute(
-      'transform',
-      'translate(' + tx + ' ' + ty + ') rotate(' + rot +
-      ' 100 245) translate(100 245) scale(1 ' + sy +
-      ') translate(-100 -245)'
-    );
-
-    $('aL').setAttribute('transform', 'rotate(' + aL + ' 68 108)');
+</script>
+</body>
+</html>
