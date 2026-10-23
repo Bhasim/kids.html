@@ -153,7 +153,6 @@ h1 {
   justify-content: center;
   font-size: min(39vh, 65vw);
   line-height: 1.1;
-  /* تعديل لضمان رقص وحركة جسد الحيوان بالكامل مع المحور */
   transform-origin: center bottom;
 }
 
@@ -414,6 +413,7 @@ let musicStep = 0;
 let gameStartedAt = 0;
 let timerInterval = null;
 let sessionFinished = false;
+let voicesList = [];
 
 const v = $('v');
 const cv = document.createElement('canvas');
@@ -440,30 +440,43 @@ const MOV = [
 const DAN = ['🐻', '🦁', '🐼', '🐵', '🐶', '🦄', '🐯', '🐸'];
 const OK = ['أحسنت', 'أحسنت يا بطل', 'برافو', 'ممتاز', 'رائع'];
 
+// تحضير الأصوات المتاحة في الجهاز فوراً
+function loadVoices() {
+  if (typeof speechSynthesis !== 'undefined') {
+    voicesList = speechSynthesis.getVoices();
+  }
+}
+loadVoices();
+if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
+  speechSynthesis.onvoiceschanged = loadVoices;
+}
+
 function setAge(a) {
   age = a;
   $('a3').className = a === 3 ? 'on' : '';
   $('a5').className = a === 5 ? 'on' : '';
 }
 
-function say(t, cancel = false) {
+// دالة نطق معدلة ومضمونة للغة العربية
+function say(t, cancel = true) {
   try {
-    if (!window.speechSynthesis) return;
+    if (!('speechSynthesis' in window)) return;
     if (cancel) speechSynthesis.cancel();
 
     const u = new SpeechSynthesisUtterance(t);
     u.lang = 'ar-SA';
 
-    const voices = speechSynthesis.getVoices()
-      .filter(x => x.lang.replace('_', '-').toLowerCase().startsWith('ar'));
+    if (voicesList.length === 0) {
+      voicesList = speechSynthesis.getVoices();
+    }
 
-    u.voice =
-      voices.find(x => /female|woman|girl|laila|layla|mariam|maryam|zeina|zaina|sara|salma|hoda|هدى|ليلى|مريم/i.test(x.name)) ||
-      voices.find(x => /ar-SA|ar-EG/i.test(x.lang)) ||
-      voices[0] || null;
+    const arVoices = voicesList.filter(x => x.lang && x.lang.replace('_', '-').toLowerCase().startsWith('ar'));
+    if (arVoices.length > 0) {
+      u.voice = arVoices.find(x => /female|woman|girl|laila|layla|mariam|maryam|zeina|zaina|sara|salma|hoda|هدى|ليلى|مريم/i.test(x.name)) || arVoices[0];
+    }
 
-    u.pitch = 1.3;
-    u.rate = 1.0;
+    u.pitch = 1.2;
+    u.rate = 0.9;
     u.volume = 1;
     speechSynthesis.speak(u);
   } catch (e) {}
@@ -568,15 +581,7 @@ function endSession() {
   $('finalStars').textContent = '⭐ عدد النجوم التي جمعتها: ' + stars;
   $('timeup').hidden = false;
 
-  try {
-    if (speechSynthesis) {
-      speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance('انتهى وقت اللعب. أحسنت يا بطل!');
-      u.lang = 'ar-SA';
-      u.pitch = 1.2;
-      speechSynthesis.speak(u);
-    }
-  } catch (e) {}
+  say('انتهى وقت اللعب. أحسنت يا بطل!', true);
 }
 
 function ok() {
@@ -590,7 +595,7 @@ function ok() {
   }, i * 100));
 
   banner(['أحسنت! 🌟', 'برافو! 🎉', 'رائع! 👏'][stars % 3]);
-  say(OK[Math.random() * OK.length | 0]);
+  say(OK[Math.random() * OK.length | 0], true);
 
   if (stars >= GOAL) {
     stars = 0;
@@ -661,6 +666,7 @@ async function start(g) {
   updateTimer();
   timerInterval = setInterval(updateTimer, 250);
 
+  // تفعيل نطق النص الترحيبي عند بداية اللعبة فوراً لمزامنة الصوت
   say(
     g === 'dance'
       ? 'مرحبًا يا أبطال! هيا نرقص'
@@ -731,14 +737,14 @@ function next() {
     mv = MOV[choices[Math.random() * choices.length | 0]];
     $('pr').textContent = mv[0];
     $('ar').textContent = mv[1];
-    say(mv[0]);
+    say(mv[0], true);
   } else {
     col = COL[Math.random() * COL.length | 0];
     $('pr').textContent = 'هات شيئًا ' + col[0] + ' وأرِه للكاميرا!';
     $('an').className = 'cbox';
     $('an').style.background = col[3];
     $('an').textContent = col[1];
-    say('هات شيئًا ' + col[0] + ' وأرِه للكاميرا');
+    say('هات شيئًا ' + col[0] + ' وأرِه للكاميرا', true);
   }
 }
 
@@ -815,14 +821,12 @@ function loop(t) {
   const level = Math.min(1, sm / .16);
   $('mt').firstElementChild.style.width = (level * 100) + '%';
 
-  // تعديل حركة رقص الحيوان بالكامل (حركة تمايل الجسد والدوران والقفز معا للأعلى والأسفل)
   if (game === 'dance') {
     const angle = Math.sin(t / 180) * (8 + level * 15);
     const scale = 1 + Math.abs(Math.sin(t / 140)) * (0.15 + level * 0.15);
     const translateY = Math.sin(t / 100) * 12;
     $('an').style.transform = `translateY(${translateY}px) rotate(${angle}deg) scale(${scale})`;
   } else if (game === 'move' && mv) {
-    // حركة تقليد الشخصية الكرتونية للطفل
     const k = mv[2];
     const p = (Math.sin(t / 260) + 1) / 2;
 
